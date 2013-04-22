@@ -1,0 +1,322 @@
+#+Title: The Perils of Cross-Domain, Base64-Encoded, Clojure-Enabled Image Importing
+#+DATE: SNUG 2013-04
+#+AUTHOR: Tim Visher
+#+Babel: :results silent
+
+* Introduction
+
+  Hello, I'm Tim Visher from Relay Network and I'd like to talk about the challenges of client-side encoding cross-origin image data and importing it to the server using javascript and clojure.
+
+  I was recently faced with the challenge of importing wallpaper images from thefoxisblack where I believed they had begun to require that certain cookies be set in order to allow their content to be downloaded. This destroyed my ability to send the urls back to the server and have the server download them on my users behalf (me). I've been thinking for a long time about how much of a dick move it is to hit the server twice (especially on a site like wallbase), once on the client and once on the server, in order to download a wallpaper. I'd much rather take the data the client already has and simply stream it, from the client, back to wallpaperrr. This seemed like the perfect opportunity to experiment with that approach, since it would seemingly be the only way I could get the data from thefoxisblack back to my server. What ensued was a lot of learning, and ultimately both a failure and a success.
+
+* The Context
+
+  What is Wallpaperrr? Wallpaperrr is a service intended to make it dead simple to import images to and manage your desktop wallpaper collection across multiple devices with differing screen resolutions and storage capacities. It aims to make it as easy as instapaper or evernote to save a wallpaper you've found on the Internet to your wallpaper collection and to control how that wallpaper appears on your devices.
+
+  So far I've been taking the strategy that I can send back a simple JSON blob from a site that a user wants to import consisting of
+
+#+begin_src js
+{
+  'title': 'foo',
+  'source': 'http://localhost/foo/,
+  'sourceUri': ['http://localhost/foo_1920x1080.png',  'http://localhost/foo_1280x800.png']
+}
+#+end_src
+
+  What I'd prefer, in deference to the servers I'm importing from, would be to send something more like this
+
+#+begin_src js
+{
+  'title': 'foo',
+  'source': 'http://localhost/foo/,
+  'sourceUri': ['iVBORw0KGgoAAA…ggg==']
+}
+#+end_src
+
+  Thus offloading the resonsibility of downloading the image to each of my clients and allowing them to stream it directly to me.
+
+* The Story
+
+  The reason for most of the rigamoral that follows is that frames are not allowed to access eachother's DOMs. The purpose of the bookmarklet is thus to insert the message recipient shim into the source page. The purpose of message recipient shim is to obtain the title, source, and sourceUris from the source page, and be able to post them back to the iframe containing wallpaperrr. The bookmarklet site then posts that data back to the server and allows the user to interact with the recently imported wallpaper in some ways.
+
+** Insert a script from wallpaperrr into source site
+
+#+begin_src js
+  // wallpaperrr…
+  var d=document,
+      z=d.createElement('scr'+'ipt'),
+      b=d.body;
+  
+  try {
+    if(!b) {
+      throw (0);
+    }
+    z.setAttribute('src','http://localhost:3000/js/import.js');
+    b.appendChild(z);
+  } catch (e) {
+    alert('Please wait until the page has loaded.');
+  }
+  
+  void(0)
+#+end_src
+
+** Scrape site looking for title, source, and sourceUri(s)
+
+*** The anatomy of a scraper
+
+    I need 3 things: title, source, and the uris.
+
+    Title is used as the title of the wallpaper in your library as well as the name of the wallpaper file on downloading it.
+
+    Source is used to to link back to the source if others want to import that wallpaper.
+
+    Source URIs are used to download the actual wallpapers. Alternatively to the source URIs, I could have a series of base64 strings.
+
+#+begin_src js
+  // import.js
+  wallpaperrrScraper.thefoxisblackScraper = function () {
+    var aNodes, imageUrls, i;
+    wallpaperrrScraper.title = document.querySelector('.post h2 a').textContent;
+    aNodes = document.querySelectorAll('#wallpaper a');
+    imageUrls = [];
+    for (i = 0; i < aNodes.length; i += 1) {
+      imageUrls.push(aNodes[i].href);
+    }
+    wallpaperrrScraper.sourceUri = imageUrls;
+    wallpaperrrScraper.merge = true;
+    wallpaperrrScraper.insertIFrame();
+  };
+#+end_src
+
+#+begin_src js
+  // import.js
+  wallpaperrrScraper.scraperDispatch = {
+    "thefoxisblack.com":                 wallpaperrrScraper.thefoxisblackScraper,
+    "10.0.0.*":                          wallpaperrrScraper.localhostScraper,
+  };
+#+end_src
+
+#+begin_src js
+  // import.js
+  wallpaperrrScraper.scrapeSite = function () {
+  
+    var siteScraper, siteMatch;
+  
+    for (siteMatch in wallpaperrrScraper.scraperDispatch) {
+      if (wallpaperrrScraper.scraperDispatch.hasOwnProperty(siteMatch)) {
+        if (document.baseURI.match(siteMatch)) {
+          siteScraper = wallpaperrrScraper.scraperDispatch[siteMatch];
+          break;
+        }
+      }
+    }
+  
+    if (siteScraper) {
+      siteScraper();
+      return true;
+    }
+  
+    wallpaperrrScraper.defaultScraper();
+    return true;
+  
+  };
+#+end_src
+
+    
+** Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it.
+
+#+begin_src js
+  // import.js
+  wallpaperrrScraper.insertIFrame = function () {
+    var i, isrc;
+    i =  document.createElement('iframe');
+    i.setAttribute('id', 'addFrame');
+    i.setAttribute('src', 'http://localhost:3000/bookmarklet-import');
+    i.setAttribute('style', 'position: fixed; top: 10px; left: 10px; height: 200px; width: 200px; border: 5px solid #333; z-index: 12345;');
+    document.body.appendChild(i);
+    i.focus();
+  };
+#+end_src
+
+** Once iframe is loaded, ask parent window to give me the data through postMessage
+
+#+begin_src js
+  // bookmarklet-import.js
+  wallpaperrrBookmarkletImport.doImport = function () {
+    window.addEventListener('message', wallpaperrrBookmarkletImport.receiveMessage);
+    window.parent.postMessage('wallpaperSite:::gimme-import-data', '*');
+  };
+#+end_src
+
+** Upon receiving the gimme-data message, postMessage back to the iframe with the importData in a JSON String
+
+#+begin_src js
+  // import.js
+  var messageHandlers = {
+    'gimme-import-data': postImportDataMessage
+  };
+#+end_src
+
+#+begin_src js
+  // import.js, bookmarket-import.js
+  var parseMessage = function (message) {
+    var messageParts, payload;
+  
+    messageParts = message.split(':::');
+    if (messageParts[2]) {
+      try {
+        payload = JSON.parse(messageParts[2]);
+      }
+      catch (e) {
+        payload = messageParts[2];
+      }
+    }
+  
+    return {
+      'target': messageParts[0],
+      'title': messageParts[1],
+      'payload': payload
+    };
+  };
+#+end_src
+
+#+begin_src js
+  // import.js
+  function handleMessage(e) {
+    var message;
+  
+    message = parseMessage(e.data);
+  
+    if ('wallpaperSite' !== message.target) {
+      return false;
+    }
+  
+    if (messageHandlers[message.title]) {
+      return messageHandlers[message.title](e, message.payload);
+    }
+  
+    console.info('Can\'t deal with message: %o', message);
+  }
+  
+  window.addEventListener('message', handleMessage);
+#+end_src
+
+#+begin_src js
+  // import.js
+  var postImportDataMessage = function (e) {
+    var payload;
+    payload = JSON.stringify({
+      'title': Wallpaperrr.Scraper.title,
+      'sourceUri': Wallpaperrr.Scraper.sourceUri,
+      'source': Wallpaperrr.Scraper.source,
+      'merge': Wallpaperrr.Scraper.merge
+    });
+    e.source.postMessage("wallpaperrr:::import-data:::" + payload, '*');
+  };
+#+end_src
+
+** Take the import data and post it to wallpaperrr.
+
+#+begin_src js
+  // bookmarklet-import.js
+  wallpaperrrBookmarkletImport.imgsLoaded = function (importData) {
+    var x;
+  
+    x = wallpaperrrBookmarkletImport.importRequest();
+  
+    x.send(JSON.stringify(importData));
+    Wallpaperrr.Functions.showElement(document.getElementById('importing-header'));
+  };
+#+end_src
+
+#+begin_src js
+  // bookmarklet-import.js
+  wallpaperrrBookmarkletImport.importRequest = function () {
+      var x = new XMLHttpRequest();
+      x.open('POST', '/wallpaper');
+      x.setRequestHeader('Content-Type', 'application/json');
+      x.setRequestHeader('Accept', 'application/json;q=0.0');
+      x.onreadystatechange = function () {
+        // horrifically complicated logic ellided
+      };
+      return x;
+    };
+#+end_src
+
+
+** On the back end:
+
+** Receive json POST and parse it apart.
+
+*** We use Ring Middleware to destructure the JSON Body automatically and put it into the `params` map.
+
+#+begin_src clojure
+  (def app
+    (-> #'routes/main-routes
+        wrap-json-params))
+#+end_src
+
+** Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).
+
+** Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server.
+
+* 2 Paths
+
+** How to get Same Origin image data to the back end and imported.
+
+*** Use HTML Canvas to get a datURL.
+
+*** Send it to wallpaperrr via postMessage and JSON
+
+*** Implement an extension and java-image multimethod for (class (byte-array 1))
+
+**** Everything else just works
+** How to fix importing wallpaper from thefoxisblack.
+
+*** Set your user-agent in the URLConnection
+* Client-Side Concerns
+
+** Base64 encoding
+
+*** HTML Canvas, toDataURI
+
+*** countdown latch
+
+** Cross-Domain Scripts (Same Origin Policy)
+
+*** iframe communication via message posting
+
+    I effectively implemented a very simple message bus using JSON.
+
+**** Each window can be the target of a message. If you post messages directly to the window, you don't need to be concerned with doubling up on handlers
+
+**** You want to know who's talking to whom, so we include the target attribute.
+
+**** Dispatch tables help us line a particular message up with a function.
+
+** I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.
+
+   http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#security-with-canvas-elements
+
+* Server-Side Concerns
+
+** Decoding Base64 data
+
+*** Java's got that
+
+*** dataURIs are not base64 data
+
+** Using Base64 data as an image
+
+*** clojure multimethods with class as the dispatch function `(class (byte-array 1))`
+
+** Setting a URLConnection's User-Agent string
+
+*** Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.
+* Further experiments
+
+** Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe.
+
+# Local Variables:
+# org-s5-theme: "railscast"
+# End:
