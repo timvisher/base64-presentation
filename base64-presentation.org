@@ -1,39 +1,64 @@
 #+Title: The Perils of Cross-Domain, Base64-Encoded, Clojure-Enabled Image Importing
-#+DATE: SNUG 2013-04
+#+DATE: %Y-%m-%d
 #+AUTHOR: Tim Visher
 #+Babel: :results silent
 
-* Introduction
+* Introduction                                                        :slide:
 
-  Hello, I'm Tim Visher from Relay Network and I'd like to talk about the challenges of client-side encoding cross-origin image data and importing it to the server using javascript and clojure.
+- Relay Network
 
-  I was recently faced with the challenge of importing wallpaper images from thefoxisblack where I believed they had begun to require that certain cookies be set in order to allow their content to be downloaded. This destroyed my ability to send the urls back to the server and have the server download them on my users behalf (me). I've been thinking for a long time about how much of a dick move it is to hit the server twice (especially on a site like wallbase), once on the client and once on the server, in order to download a wallpaper. I'd much rather take the data the client already has and simply stream it, from the client, back to wallpaperrr. This seemed like the perfect opportunity to experiment with that approach, since it would seemingly be the only way I could get the data from thefoxisblack back to my server. What ensued was a lot of learning, and ultimately both a failure and a success.
+- [[http://wallpaperrr.cc][Wallpaperrrr]]
 
-* The Context
+** slide notes                                                        :notes:
 
-  What is Wallpaperrr? Wallpaperrr is a service intended to make it dead simple to import images to and manage your desktop wallpaper collection across multiple devices with differing screen resolutions and storage capacities. It aims to make it as easy as instapaper or evernote to save a wallpaper you've found on the Internet to your wallpaper collection and to control how that wallpaper appears on your devices.
+   - Hello, I'm Tim Visher from Relay Network and I'd like to talk about the challenges of client-side encoding cross-origin image data and importing it to the server using javascript and clojure.
 
-  So far I've been taking the strategy that I can send back a simple JSON blob from a site that a user wants to import consisting of
+   - What is Wallpaperrr? Wallpaperrr is a service intended to make it dead simple to import images to and manage your desktop wallpaper collection across multiple devices with differing screen resolutions and storage capacities. It aims to make it as easy as instapaper or evernote to save a wallpaper you've found on the Internet to your wallpaper collection and to control how that wallpaper appears on your devices.
 
-#+begin_src js
-{
-  'title': 'foo',
-  'source': 'http://localhost/foo/,
-  'sourceUri': ['http://localhost/foo_1920x1080.png',  'http://localhost/foo_1280x800.png']
-}
-#+end_src
+   - I was recently faced with the challenge of importing wallpaper images from thefoxisblack where I believed they had begun to require that certain cookies be set in order to allow their content to be downloaded. This destroyed my ability to send the urls back to the server and have the server download them on my users behalf (me). I've been thinking for a long time about how much of a dick move it is to hit the server twice (especially on a site like wallbase), once on the client and once on the server, in order to download a wallpaper. I'd much rather take the data the client already has and simply stream it, from the client, back to wallpaperrr. This seemed like the perfect opportunity to experiment with that approach, since it would seemingly be the only way I could get the data from thefoxisblack back to my server. What ensued was a lot of learning, and ultimately both a failure and a success.
 
-  What I'd prefer, in deference to the servers I'm importing from, would be to send something more like this
+* Importing an Image                                                  :slide:
+
+- =POST= a JSON Blob to the server
 
 #+begin_src js
-{
-  'title': 'foo',
-  'source': 'http://localhost/foo/,
-  'sourceUri': ['iVBORw0KGgoAAA…ggg==']
-}
+  {
+    'title': 'foo',
+    'source': 'http://localhost/foo/',
+    'sourceUri': [
+      'http://localhost/foo_1920x1080.png',
+      'http://localhost/foo_1280x800.png'
+    ]
+  }
 #+end_src
 
-  Thus offloading the resonsibility of downloading the image to each of my clients and allowing them to stream it directly to me.
+** notes                                                              :notes:
+
+   - Basic functionality is fine. Simply download each sourceUri on the back end
+   - Downsides
+     - Risk getting black-listed if you become popular
+     - Can be bad for the receiving server to be hit twice for the same image (wallbase.cc)
+
+* A better JSON Blob                                                  :slide:
+
+#+begin_src js
+  {
+    'title': 'foo',
+    'source': 'http://localhost/foo/',
+    'sourceUri': [
+      'iVBORw0KGgoAAA…ggg==',
+      'aBGoAAt0wwgggg…axx=='
+    ]
+  }
+#+end_src
+
+** notes                                                              :notes:
+
+   - So far I've been taking the strategy that I can send back a simple JSON blob from a site that a user wants to import consisting of
+
+   - What I'd prefer, in deference to the servers I'm importing from, would be to send something more like this
+
+   - Thus offloading the resonsibility of downloading the image to each of my clients and allowing them to stream it directly to me.
 
 * The Story
 
@@ -46,7 +71,7 @@
   var d=document,
       z=d.createElement('scr'+'ipt'),
       b=d.body;
-  
+
   try {
     if(!b) {
       throw (0);
@@ -56,7 +81,7 @@
   } catch (e) {
     alert('Please wait until the page has loaded.');
   }
-  
+
   void(0)
 #+end_src
 
@@ -99,9 +124,9 @@
 #+begin_src js
   // import.js
   wallpaperrrScraper.scrapeSite = function () {
-  
+
     var siteScraper, siteMatch;
-  
+
     for (siteMatch in wallpaperrrScraper.scraperDispatch) {
       if (wallpaperrrScraper.scraperDispatch.hasOwnProperty(siteMatch)) {
         if (document.baseURI.match(siteMatch)) {
@@ -110,19 +135,19 @@
         }
       }
     }
-  
+
     if (siteScraper) {
       siteScraper();
       return true;
     }
-  
+
     wallpaperrrScraper.defaultScraper();
     return true;
-  
+
   };
 #+end_src
 
-    
+
 ** Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it.
 
 #+begin_src js
@@ -161,7 +186,7 @@
   // import.js, bookmarket-import.js
   var parseMessage = function (message) {
     var messageParts, payload;
-  
+
     messageParts = message.split(':::');
     if (messageParts[2]) {
       try {
@@ -171,7 +196,7 @@
         payload = messageParts[2];
       }
     }
-  
+
     return {
       'target': messageParts[0],
       'title': messageParts[1],
@@ -184,20 +209,20 @@
   // import.js
   function handleMessage(e) {
     var message;
-  
+
     message = parseMessage(e.data);
-  
+
     if ('wallpaperSite' !== message.target) {
       return false;
     }
-  
+
     if (messageHandlers[message.title]) {
       return messageHandlers[message.title](e, message.payload);
     }
-  
+
     console.info('Can\'t deal with message: %o', message);
   }
-  
+
   window.addEventListener('message', handleMessage);
 #+end_src
 
@@ -221,9 +246,9 @@
   // bookmarklet-import.js
   wallpaperrrBookmarkletImport.imgsLoaded = function (importData) {
     var x;
-  
+
     x = wallpaperrrBookmarkletImport.importRequest();
-  
+
     x.send(JSON.stringify(importData));
     Wallpaperrr.Functions.showElement(document.getElementById('importing-header'));
   };
@@ -317,6 +342,16 @@
 
 ** Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe.
 
-# Local Variables:
-# org-s5-theme: "railscast"
-# End:
+   #+STYLE: <link rel="stylesheet" type="text/css" href="common.css" />
+   #+STYLE: <link rel="stylesheet" type="text/css" href="screen.css" media="screen" />
+   #+STYLE: <link rel="stylesheet" type="text/css" href="projection.css" media="projection" />
+   #+STYLE: <link rel="stylesheet" type="text/css" href="presenter.css" media="presenter" />
+
+   #+BEGIN_HTML
+   <script type="text/javascript" src="org-html-slideshow.js"></script>
+   #+END_HTML
+
+   # Local Variables:
+   # org-export-html-style-include-default: nil
+   # org-export-html-style-include-scripts: nil
+   # End:
