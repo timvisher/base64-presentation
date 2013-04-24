@@ -3,6 +3,60 @@
  * These styles will apply only to the slide-show view.
  */
 
+html {
+   zoom: 10%;
+}
+
+img {
+   max-height: 700px;
+}
+
+.bigcode pre {
+   zoom: 50%;
+}
+
+@media all and (min-width:400px) {
+   html {
+      zoom: 25%;
+   }
+}
+
+@media all and (min-width:470px) {
+   html {
+      zoom: 35%;
+   }
+}
+
+@media all and (min-width:600px) {
+   html {
+      zoom:45%;
+   }
+}
+
+@media all and (min-width:700px) {
+   html {
+      zoom: 50%;
+   }
+}
+
+@media all and (min-width:800px) {
+   html {
+      zoom:60%;
+   }
+}
+
+@media all and (min-width:1200px) {
+   html {
+      zoom:75%;
+   }
+}
+
+@media all and (min-width:1400px) {
+   html {
+      zoom:100%;
+   }
+}
+
 body {
    margin: 18pt;
    font-size: 24pt;

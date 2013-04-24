@@ -5,21 +5,21 @@
 
 * Introduction                                                        :slide:
 
-- Relay Network
+  - Relay Network
 
-- [[http://wallpaperrr.cc][Wallpaperrrr]]
+  - I have a problem
 
-** slide notes                                                        :notes:
+  - [[http://wallpaperrr.cc][Wallpaperrrr]]
 
-   - Hello, I'm Tim Visher from Relay Network and I'd like to talk about the challenges of client-side encoding cross-origin image data and importing it to the server using javascript and clojure.
+*** slide notes                                                       :notes:
 
-   - What is Wallpaperrr? Wallpaperrr is a service intended to make it dead simple to import images to and manage your desktop wallpaper collection across multiple devices with differing screen resolutions and storage capacities. It aims to make it as easy as instapaper or evernote to save a wallpaper you've found on the Internet to your wallpaper collection and to control how that wallpaper appears on your devices.
+    - Hello, I'm Tim Visher from Relay Network and I'd like to talk about the challenges of client-side encoding cross-origin image data and importing it to the server using javascript and clojure.
 
-   - I was recently faced with the challenge of importing wallpaper images from thefoxisblack where I believed they had begun to require that certain cookies be set in order to allow their content to be downloaded. This destroyed my ability to send the urls back to the server and have the server download them on my users behalf (me). I've been thinking for a long time about how much of a dick move it is to hit the server twice (especially on a site like wallbase), once on the client and once on the server, in order to download a wallpaper. I'd much rather take the data the client already has and simply stream it, from the client, back to wallpaperrr. This seemed like the perfect opportunity to experiment with that approach, since it would seemingly be the only way I could get the data from thefoxisblack back to my server. What ensued was a lot of learning, and ultimately both a failure and a success.
+    - What is Wallpaperrr? Wallpaperrr is a service intended to make it dead simple to import images to and manage your desktop wallpaper collection across multiple devices with differing screen resolutions and storage capacities. It aims to make it as easy as instapaper or evernote to save a wallpaper you've found on the Internet to your wallpaper collection and to control how that wallpaper appears on your devices.
 
-* Importing an Image                                                  :slide:
+    - I was recently faced with the challenge of importing wallpaper images from thefoxisblack where I believed they had begun to require that certain cookies be set in order to allow their content to be downloaded. This destroyed my ability to send the urls back to the server and have the server download them on my users behalf (me). I've been thinking for a long time about how much of a dick move it is to hit the server twice (especially on a site like wallbase), once on the client and once on the server, in order to download a wallpaper. I'd much rather take the data the client already has and simply stream it, from the client, back to wallpaperrr. This seemed like the perfect opportunity to experiment with that approach, since it would seemingly be the only way I could get the data from thefoxisblack back to my server. What ensued was a lot of learning, and ultimately both a failure and a success.
 
-- =POST= a JSON Blob to the server
+* =POST= an Image to the server                                       :slide:
 
 #+begin_src js
   {
@@ -32,14 +32,14 @@
   }
 #+end_src
 
-** notes                                                              :notes:
+*** notes                                                             :notes:
 
-   - Basic functionality is fine. Simply download each sourceUri on the back end
-   - Downsides
-     - Risk getting black-listed if you become popular
-     - Can be bad for the receiving server to be hit twice for the same image (wallbase.cc)
+    - Basic functionality is fine. Simply download each sourceUri on the back end
+    - Downsides
+      - Risk getting black-listed if you become popular
+      - Can be bad for the receiving server to be hit twice for the same image (wallbase.cc)
 
-* A better JSON Blob                                                  :slide:
+* A better =POST= body?                                               :slide:
 
 #+begin_src js
   {
@@ -52,56 +52,69 @@
   }
 #+end_src
 
-** notes                                                              :notes:
+*** notes                                                             :notes:
 
-   - So far I've been taking the strategy that I can send back a simple JSON blob from a site that a user wants to import consisting of
+    - Advantages
 
-   - What I'd prefer, in deference to the servers I'm importing from, would be to send something more like this
+      - Get's me the image data directly from the client, which already has the data!
 
-   - Thus offloading the resonsibility of downloading the image to each of my clients and allowing them to stream it directly to me.
+      - Offloads downloading the image to the client, which saves me from getting black-listed
 
-* The Story
+    - Disadvantages
 
-  The reason for most of the rigamoral that follows is that frames are not allowed to access eachother's DOMs. The purpose of the bookmarklet is thus to insert the message recipient shim into the source page. The purpose of message recipient shim is to obtain the title, source, and sourceUris from the source page, and be able to post them back to the iframe containing wallpaperrr. The bookmarklet site then posts that data back to the server and allows the user to interact with the recently imported wallpaper in some ways.
+      - Client's with low-bandwidth get hammered.
 
-** Insert a script from wallpaperrr into source site
+      - Same Origin Policy!
+
+* Obtaining the JSON                                                  :slide:
+
+  - A bookmarklet
+  - A scraper
+  - An =iframe=
+  - [[http://www.whatwg.org/specs/web-apps/current-work/multipage/web-messaging.html#web-messaging][=postMessage=]]
+
+*** The Process                                                       :notes:
+
+    - The Process
+      - Insert a script from Wallpaperrr into source site
+      - Scrape site for a title, source, and sourceUri(s)
+      - =onload= of the iframe, post =gimme-data= message to =window.parent=
+      - on =gimme-data= message, post =import-data= message back to =event.source=
+        - Actually, there's a fork here. We can either gather up the sourceURIs directly and do nothing else, or we can grab canvas data.
+      - on =import-data= message, =POST= =import-data= JSON back to server
+    - Things to remember
+      - Cross-domain script communication is verbotten.
+      - Scripts from one frame on one domain can't access another's frame's DOM
+      - You're stuck with messaging
+
+** The bookmarklet                                                    :slide:
 
 #+begin_src js
-  // wallpaperrr…
   var d=document,
       z=d.createElement('scr'+'ipt'),
       b=d.body;
 
-  try {
-    if(!b) {
-      throw (0);
-    }
-    z.setAttribute('src','http://localhost:3000/js/import.js');
-    b.appendChild(z);
-  } catch (e) {
-    alert('Please wait until the page has loaded.');
+  if(!b) {
+    throw (0);
   }
+  z.setAttribute('src','http://localhost:3000/js/import.js');
+  b.appendChild(z);
 
-  void(0)
 #+end_src
 
-** Scrape site looking for title, source, and sourceUri(s)
+*** our bootstraperr                                                  :notes:
 
-*** The anatomy of a scraper
+    - responsible for scraping the site
+      - as it's loaded into the window's DOM directly, it has access to it
+    - responsible for inserting the iframe it will be talking to
 
-    I need 3 things: title, source, and the uris.
-
-    Title is used as the title of the wallpaper in your library as well as the name of the wallpaper file on downloading it.
-
-    Source is used to to link back to the source if others want to import that wallpaper.
-
-    Source URIs are used to download the actual wallpapers. Alternatively to the source URIs, I could have a series of base64 strings.
+** The Scraper                                                        :slide:
 
 #+begin_src js
-  // import.js
   wallpaperrrScraper.thefoxisblackScraper = function () {
     var aNodes, imageUrls, i;
-    wallpaperrrScraper.title = document.querySelector('.post h2 a').textContent;
+    wallpaperrrScraper.title =
+      document.querySelector('.post h2 a').textContent;
     aNodes = document.querySelectorAll('#wallpaper a');
     imageUrls = [];
     for (i = 0; i < aNodes.length; i += 1) {
@@ -113,42 +126,74 @@
   };
 #+end_src
 
+*** The anatomy of a scraper                                          :notes:
+
+    - I need 3 things: title, source, and the uris.
+
+    - Title is used as the title of the wallpaper in your library as well as the name of the wallpaper file on downloading it.
+
+    - Source is used to to link back to the source if others want to import that wallpaper.
+
+    - Source URIs are used to download the actual wallpapers. Alternatively to the source URIs, I could have a series of base64 strings.
+
+** The Scraper                                                        :slide:
+
 #+begin_src js
-  // import.js
   wallpaperrrScraper.scraperDispatch = {
-    "thefoxisblack.com":                 wallpaperrrScraper.thefoxisblackScraper,
-    "10.0.0.*":                          wallpaperrrScraper.localhostScraper,
+    "thefoxisblack.com": wallpaperrrScraper.thefoxisblackScraper,
+    "10.0.0.*":          wallpaperrrScraper.localhostScraper,
   };
 #+end_src
 
+*** The dispatch table                                                :notes:
+
+   - Dispatch tables are nice! I picked them up from Relay.
+
+   - Anyone can assoc into them, potentially opening up extensions without code redeployment.
+
+   - This particular stricture is nice because I can use regexs
+
+** The Scraper                                                        :slide:
+   
+   #+begin_src js
+     // man, I want underscore!
+     wallpaperrrScraper.matchingScraper = function (sitePattern) {
+       var siteMatch;
+       for (siteMatch in wallpaperrrScraper.scraperDispatch) {
+         if (wallpaperrrScraper.scraperDispatch
+             .hasOwnProperty(siteMatch)) {
+           if (document.baseURI.match(sitePattern)) {
+             return wallpaperrrScraper.scraperDispatch[siteMatch];
+           }
+         }
+       }
+     };
+   #+end_src
+
+*** Selecting a scraper                                               :notes:
+
+    - If I were using underscore, this'd be a lot easier. Que Sera, Sera.
+    - Remember to use =hasOwnProperty= if you're iterating over an object's properties.
+    - Passing a string to =match= works nicely and allows us to use regexs.
+
+** The Scraper                                                        :slide:
+   
 #+begin_src js
-  // import.js
   wallpaperrrScraper.scrapeSite = function () {
-
-    var siteScraper, siteMatch;
-
-    for (siteMatch in wallpaperrrScraper.scraperDispatch) {
-      if (wallpaperrrScraper.scraperDispatch.hasOwnProperty(siteMatch)) {
-        if (document.baseURI.match(siteMatch)) {
-          siteScraper = wallpaperrrScraper.scraperDispatch[siteMatch];
-          break;
-        }
-      }
-    }
-
-    if (siteScraper) {
-      siteScraper();
-      return true;
-    }
-
-    wallpaperrrScraper.defaultScraper();
-    return true;
-
+    var siteScraper;
+  
+    siteScraper = wallpaperrrScraper.matchingScraper();
+  
+    return siteScraper ? siteScraper() : wallpaperrrScraper.defaultScraper();
   };
 #+end_src
 
+*** Calling the scraper                                               :notes:
 
-** Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it.
+    - We provide a default scraper.
+    - A saner language would let me get a key out of a map with a default.
+
+** The =iframe=
 
 #+begin_src js
   // import.js
@@ -163,127 +208,316 @@
   };
 #+end_src
 
-** Once iframe is loaded, ask parent window to give me the data through postMessage
+*** Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it. :notes:
+
+    - We position it fixed at the top left so it looks nice and doesn't matter in what context it is inserted in.
+    - Love that =z-index=
+
+** =postMessage= to site                                              :slide:
 
 #+begin_src js
-  // bookmarklet-import.js
-  wallpaperrrBookmarkletImport.doImport = function () {
-    window.addEventListener('message', wallpaperrrBookmarkletImport.receiveMessage);
-    window.parent.postMessage('wallpaperSite:::gimme-import-data', '*');
-  };
+    wallpaperrrBookmarkletImport.doImport = function () {
+      window.addEventListener(
+        'message',
+        wallpaperrrBookmarkletImport.receiveMessage);
+      window.parent.postMessage(
+        {
+          'target': 'wallpaperSite',
+          'title': 'gimme-import-data'
+        },
+        '*');
+    };
 #+end_src
 
-** Upon receiving the gimme-data message, postMessage back to the iframe with the importData in a JSON String
+***                                                                   :notes:
+** =postMessage= to site                                              :slide:
 
 #+begin_src js
-  // import.js
   var messageHandlers = {
     'gimme-import-data': postImportDataMessage
   };
 #+end_src
 
-#+begin_src js
-  // import.js, bookmarket-import.js
-  var parseMessage = function (message) {
-    var messageParts, payload;
-
-    messageParts = message.split(':::');
-    if (messageParts[2]) {
-      try {
-        payload = JSON.parse(messageParts[2]);
-      }
-      catch (e) {
-        payload = messageParts[2];
-      }
-    }
-
-    return {
-      'target': messageParts[0],
-      'title': messageParts[1],
-      'payload': payload
-    };
-  };
-#+end_src
+** =postMessage= to site                                              :slide:
 
 #+begin_src js
-  // import.js
   function handleMessage(e) {
-    var message;
-
-    message = parseMessage(e.data);
-
-    if ('wallpaperSite' !== message.target) {
+    if ('wallpaperSite' !== e.data.target) {
       return false;
     }
 
-    if (messageHandlers[message.title]) {
-      return messageHandlers[message.title](e, message.payload);
+    if (messageHandlers[e.data.title]) {
+      return messageHandlers[e.data.title](e, e.data.payload);
     }
-
-    console.info('Can\'t deal with message: %o', message);
   }
 
   window.addEventListener('message', handleMessage);
 #+end_src
 
+** =postMessage= to Wallpaperrr                                       :slide:
+
 #+begin_src js
-  // import.js
   var postImportDataMessage = function (e) {
     var payload;
-    payload = JSON.stringify({
+    payload = {
       'title': Wallpaperrr.Scraper.title,
       'sourceUri': Wallpaperrr.Scraper.sourceUri,
       'source': Wallpaperrr.Scraper.source,
       'merge': Wallpaperrr.Scraper.merge
-    });
-    e.source.postMessage("wallpaperrr:::import-data:::" + payload, '*');
-  };
-#+end_src
-
-** Take the import data and post it to wallpaperrr.
-
-#+begin_src js
-  // bookmarklet-import.js
-  wallpaperrrBookmarkletImport.imgsLoaded = function (importData) {
-    var x;
-
-    x = wallpaperrrBookmarkletImport.importRequest();
-
-    x.send(JSON.stringify(importData));
-    Wallpaperrr.Functions.showElement(document.getElementById('importing-header'));
-  };
-#+end_src
-
-#+begin_src js
-  // bookmarklet-import.js
-  wallpaperrrBookmarkletImport.importRequest = function () {
-      var x = new XMLHttpRequest();
-      x.open('POST', '/wallpaper');
-      x.setRequestHeader('Content-Type', 'application/json');
-      x.setRequestHeader('Accept', 'application/json;q=0.0');
-      x.onreadystatechange = function () {
-        // horrifically complicated logic ellided
-      };
-      return x;
     };
+    e.source.postMessage(payload, '*');
+  };
 #+end_src
 
+** A fork                                                             :slide:
 
-** On the back end:
+   1. URIs
+   2. Base64
 
-** Receive json POST and parse it apart.
+** What we've got                                                     :slide:
 
-*** We use Ring Middleware to destructure the JSON Body automatically and put it into the `params` map.
+#+begin_src js
+  {
+    'title': 'foo',
+    'source': 'http://localhost/foo/',
+    'sourceUri': [
+      'http://localhost/foo_1920x1080.png',
+      'http://localhost/foo_1280x800.png'
+    ]
+  }
+#+end_src
+
+*** notes                                                             :notes:
+
+     - Basic functionality is fine. Simply download each sourceUri on the back end
+     - Downsides
+       - Risk getting black-listed if you become popular
+       - Can be bad for the receiving server to be hit twice for the same image (wallbase.cc)
+
+** =postMessage= (sans Base64)                                        :slide:
+
+#+begin_src js
+  wallpaperrrBookmarkletImport.imgsLoaded = function (importData) {
+    wallpaperrrBookmarkletImport.importRequest()
+      .send(JSON.stringify(importData));
+    Wallpaperrr.Functions
+      .showElement(
+        document.getElementById('importing-header')
+      );
+  };
+#+end_src
+
+*** Nothing much to do here                                           :notes:
+* Using the JSON                                                      :slide:
+
+  - A Compojure =POST= Route
+  - Some Ring =middleware=
+  - Some Clojure =multimethod=s
+  - javax.imageio.ImageIO
+  - org.jdesktop.swingx.graphics.GraphicsUtilities
+
+** Basic Notes                                                        :notes:
+
+   - We support Zip Files, Straight URIS, and now Base64 Strings
+   - Middleware is cool (apparently comes from Rails?)
+   - Java's big. Has 'good' image libraries. Can throw out of memory errors when handling large files. This is something I think I'm going to pay someone else to do.
+   - Core =multimethods=
+     - Requests are handled by =multimethods= dispatching on the =accept-header=
+     - URIs are converted to =BufferedImage=, dispatching on the =class= of the input
+     - Extensions are retrieved, dispatching on =class=
+
+** The Back End Process                                               :slide:
+
+   [[file:images/the_process.png]]
+   
+*** The Back End Process                                              :notes:
+
+    - The Process
+      1. =POST= route receives the request and destructures the JSON using middleware into function parameters.
+      2. The =POST= route multimethod responsible for JSON accept headers takes over, passing the data through to the wallpaper model transaction script namespace
+      3. We expand the source uris, turning Zip files into multiple temporary files
+      4. We transform the expanded source uris into importable wallpapers
+         #+begin_src clojure
+           {:wallpaper
+            {:thumbnail-resolution
+             {:extension "jpeg",
+              :hash "f47818e3692786db6737a1b20236ce60",
+              :width 1920,
+              :height 1080},
+             :imported-at 1366813210080,
+             :rating 0,
+             :source "http://localhost:3000/…",
+             :title "trees artwork - Wallpaper (#2756701) Wallbase",
+             :tags #{"16:9" "1920x1080"},
+             :resolutions #{{:extension "jpeg", :hash "…", :width 1920, :height 1080}}}
+            :source-uri #<File /var/folders/y7/…}
+         #+end_src
+         - We have a couple of goals at this point.
+           1. Title should be appropriate for being the name of a file on any file system.
+           2. Resolutions and Aspect Ratios should be added as tags automatically
+           3. We should have hashes of all the files so storage is shared accross all users
+           4. Multiple source uris for the same logical 'wallpaper' should be merged together. Others should be kept separate.
+      5. We alter the user's library ref, adding in each wallpaper.
+      6. We save off the state of the library to the store
+      7. We finally download each of the source-uris that made it through the import process into their correlated library-store-ids
+      8. Then we thumbnail-ize them
+      9. And finally delete any temporary files that were created (at this point only in the case of ZipFiles)
+      10. Return the response map.
+
+    - We support Zip Files, Straight URIS, and now Base64 Strings
+    - Core =multimethods=
+      - Requests are handled by =multimethods= dispatching on the =accept-header=
+      - URIs are converted to =BufferedImage=, dispatching on the =class= of the input
+      - Extensions are retrieved, dispatching on =class=
+
+** A Ring App                                                         :slide:
 
 #+begin_src clojure
   (def app
     (-> #'routes/main-routes
+        …
+        wrap-params
+        …
         wrap-json-params))
 #+end_src
 
+*** Anatomy of a Ring App                                             :notes:
+
+    - A Ring app is a function which takes a request in the form of a map and returns a map representing a response.
+    - This allows the use of higher order functions to construct 'middleware' which either transform the request or response on behalf of all inner routes.
+
+** A Compojure Route                                                  :slide:
+
+#+begin_src clojure
+  (POST "/wallpaper" [merge title source sourceUri :as r]
+        (let [{{{username :value} "username"} :cookies} r]
+          (if username
+            (letfn [(rep [s] (apply str (replace {\ , \+} s)))]
+              (wallpaper-post-route r
+                                    username
+                                    title
+                                    merge
+                                    (rep source)
+                                    (if (vector? sourceUri)
+                                      (mapv rep sourceUri)
+                                      sourceUri)))
+            {:status 401})))
+#+end_src
+
+
+*** Anatomy of a Compojure route                                      :notes:
+
+    - Compojure is a thin wrapper (started at around 200 SLOC) around consructing Ring handler functions.
+    - It provides a series of Macros which make it easy to declare what kind of request you're handling, the URL you expect to hit, and how you want to destructure the parameters that can come in.
+
+** The Transaction Script                                             :slide:
+
+   - Expand the source URIs
+   - Transform source URIs to importable wallpaper
+   - Add importable wallpapers to user lib
+   - Download each to global file-store
+   - Add thumbnails for each to global file-stoer
+   - Delete temporary files
+
+*** The Transaction Script                                    :slide:bigcode:
+
+    #+begin_src clojure
+      (defn import-wallpaper
+        ([username store-base merge? title source source-uris]
+           (let [->importable-wallpaper (partial lib/import-uri->importable-wallpaper username title source)
+                 ->sanitized-title      (fn [wallpaper]
+                                          (lib/sanitize-title username (:title wallpaper) (:thumbnail-resolution wallpaper)))
+                 source-uris            (expand-source-uris source-uris)
+                 importable-wallpapers  (doall
+                                         (filter identity (map ->importable-wallpaper source-uris)))]
+             (if (not (empty? importable-wallpapers))
+               (let [source-uris              (map :source-uri importable-wallpapers)
+                     wallpapers               (map :wallpaper importable-wallpapers)
+                     sanitized-titles         (map ->sanitized-title wallpapers)
+                     shortest-sanitized-title (first (sort-by count sanitized-title))
+                     sanitized-title          shortest-sanitized-title
+                     unique-titles            (lib/unique-titles username sanitized-title)
+                     wallpapers               (map #(assoc %1 :title %2) wallpapers unique-titles)
+                     wallpapers               (if merge? [(reduce merge-wallpapers wallpapers)] wallpapers)]
+                 (dorun (map (partial lib/add-library-wallpaper! username) wallpapers))
+                 (store/put :file-system store-base (str "libraries/" username ".clj") (pr-str (into #{}  (deref (lib/new-library username)))))
+                 (let [resolutions          (map (comp :thumbnail-resolution :wallpaper) importable-wallpapers)
+                       library-object-ids   (map #(lib/wallpaper->library-object-id %1 "library" %2) (map :wallpaper importable-wallpapers) resolutions)
+                       thumbnail-object-ids (map #(lib/wallpaper->thumbnail-object-id %1 "thumbnails" %2) (map :wallpaper importable-wallpapers) resolutions)]
+                   (dorun
+                    (map #(with-open [is (io/input-stream %2)] (store/put :file-system store-base %1 is)) library-object-ids source-uris))
+                   (dorun
+                    (map (partial store/create-thumbnail :file-system store-base) library-object-ids thumbnail-object-ids)))
+                 (dorun
+                  (map fs/delete (filter fs/exists? (filter string? source-uris))))
+                 wallpapers)
+               []))))
+    #+end_src
+
+**** The Transaction Script                                           :notes:
+
+     - I'm creating functions in 4 different ways here. partial, comp, fn, and #(). Yeah, Clojure's functional alright.
+*** Expanding the source URIs                                         :slide:
+
+    #+begin_src clojure
+      (defn expand-source-uris [source-uris]
+        (loop [expanded-source-uris       #{}
+               [source-uri & source-uris] (filter importable-uri? source-uris)]
+          (if source-uri
+            (cond (zipfile? source-uri)
+                  (recur expanded-source-uris
+                         (into source-uris (zipfile-uri->temp-files source-uri)))
+      
+                  (url-exists? source-uri)
+                  (recur (conj expanded-source-uris (source-uri->temp-file source-uri))
+                         source-uris)
+      
+                  :drop-it
+                  (recur expanded-source-uris source-uris))
+            expanded-source-uris)))
+    #+end_src
+
+*** Expanding the source URIs                                         :notes:
+
+    - The loop/recur form is the only tail-call optimized form in Clojure. Useful if you can't get your job done using standard list-comprehensions or fold operations
+    - Clojure supports destructuring binds. Sequences are desructured with vectors, and maps are destructured with maps.
+    - In the case of a zipfile, we want to drop the original uri and replace it with many temporary files.
+
+*** source-uris->importable-wallpaper                                 :slide:
+
+*** Add to the user's library                                         :slide:
+
+*** Download Each source URI                                          :slide:
+
+*** Thumbnailization                                                  :slide:
+
+*** Delete the Temporary Files                                        :slide:
+
+*** Return the Map                                                    :slide:
+** Send the Response                                                  :slide:
 ** Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).
 
-** Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server.
+** Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server
+* But what about …                                                    :slide:
+
+#+begin_src js
+  {
+    'title': 'foo',
+    'source': 'http://localhost/foo/',
+    'sourceUri': [
+      'iVBORw0KGgoAAA…ggg==',
+      'aBGoAAt0wwgggg…axx=='
+    ]
+  }
+#+end_src
+
+** notes                                                              :notes:
+
+    - Disadvantages
+
+      - Client's with low-bandwidth get hammered.
+
+      - Same Origin Policy!
 
 * 2 Paths
 
@@ -340,18 +574,22 @@
 *** Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.
 * Further experiments
 
-** Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe.
+** Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe
 
-   #+STYLE: <link rel="stylesheet" type="text/css" href="common.css" />
-   #+STYLE: <link rel="stylesheet" type="text/css" href="screen.css" media="screen" />
-   #+STYLE: <link rel="stylesheet" type="text/css" href="projection.css" media="projection" />
-   #+STYLE: <link rel="stylesheet" type="text/css" href="presenter.css" media="presenter" />
+#+TAGS: slide notes
 
-   #+BEGIN_HTML
-   <script type="text/javascript" src="org-html-slideshow.js"></script>
-   #+END_HTML
+#+OPTIONS: H:4
 
-   # Local Variables:
-   # org-export-html-style-include-default: nil
-   # org-export-html-style-include-scripts: nil
-   # End:
+#+STYLE: <link rel="stylesheet" type="text/css" href="common.css" />
+#+STYLE: <link rel="stylesheet" type="text/css" href="screen.css" media="screen" />
+#+STYLE: <link rel="stylesheet" type="text/css" href="projection.css" media="projection" />
+#+STYLE: <link rel="stylesheet" type="text/css" href="presenter.css" media="presenter" />
+
+#+BEGIN_HTML
+<script type="text/javascript" src="org-html-slideshow.js"></script>
+#+END_HTML
+
+# Local Variables:
+# org-export-html-style-include-default: nil
+# org-export-html-style-include-scripts: nil
+# End:

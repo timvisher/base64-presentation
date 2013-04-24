@@ -7,11 +7,15 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="title" content="The Perils of Cross-Domain, Base64-Encoded, Clojure-Enabled Image Importing"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-04-22"/>
+<meta name="generated" content="2013-04-24"/>
 <meta name="author" content="Tim Visher"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
 
+<link rel="stylesheet" type="text/css" href="common.css" />
+<link rel="stylesheet" type="text/css" href="screen.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="projection.css" media="projection" />
+<link rel="stylesheet" type="text/css" href="presenter.css" media="presenter" />
 
 
 </head>
@@ -31,94 +35,191 @@
 <ul>
 <li><a href="#sec-1">1 Introduction</a>
 <ul>
+<li>
+<ul>
 <li><a href="#sec-1-1">1.1 slide notes</a></li>
+</ul></li>
 </ul>
 </li>
-<li><a href="#sec-2">2 Importing an Image</a>
+<li><a href="#sec-2">2 <code>POST</code> an Image to the server</a>
+<ul>
+<li>
 <ul>
 <li><a href="#sec-2-1">2.1 notes</a></li>
+</ul></li>
 </ul>
 </li>
-<li><a href="#sec-3">3 A better JSON Blob</a>
+<li><a href="#sec-3">3 A better <code>POST</code> body?</a>
+<ul>
+<li>
 <ul>
 <li><a href="#sec-3-1">3.1 notes</a></li>
+</ul></li>
 </ul>
 </li>
-<li><a href="#sec-4">4 The Story</a>
+<li><a href="#sec-4">4 Obtaining the JSON</a>
 <ul>
-<li><a href="#sec-4-1">4.1 Insert a script from wallpaperrr into source site</a></li>
-<li><a href="#sec-4-2">4.2 Scrape site looking for title, source, and sourceUri(s)</a>
+<li>
+<ul>
+<li><a href="#sec-4-1">4.1 The Process</a></li>
+</ul>
+</li>
+<li><a href="#sec-4-1">4.1 The bookmarklet</a>
+<ul>
+<li><a href="#sec-4-1-1">4.1.1 our bootstraperr</a></li>
+</ul>
+</li>
+<li><a href="#sec-4-2">4.2 The Scraper</a>
 <ul>
 <li><a href="#sec-4-2-1">4.2.1 The anatomy of a scraper</a></li>
 </ul>
 </li>
-<li><a href="#sec-4-3">4.3 Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it.</a></li>
-<li><a href="#sec-4-4">4.4 Once iframe is loaded, ask parent window to give me the data through postMessage</a></li>
-<li><a href="#sec-4-5">4.5 Upon receiving the gimme-data message, postMessage back to the iframe with the importData in a JSON String</a></li>
-<li><a href="#sec-4-6">4.6 Take the import data and post it to wallpaperrr.</a></li>
-<li><a href="#sec-4-7">4.7 On the back end:</a></li>
-<li><a href="#sec-4-8">4.8 Receive json POST and parse it apart.</a>
+<li><a href="#sec-4-3">4.3 The Scraper</a>
 <ul>
-<li><a href="#sec-4-8-1">4.8.1 We use Ring Middleware to destructure the JSON Body automatically and put it into the `params` map.</a></li>
+<li><a href="#sec-4-3-1">4.3.1 The dispatch table</a></li>
 </ul>
 </li>
-<li><a href="#sec-4-9">4.9 Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</a></li>
-<li><a href="#sec-4-10">4.10 Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server.</a></li>
+<li><a href="#sec-4-4">4.4 The Scraper</a>
+<ul>
+<li><a href="#sec-4-4-1">4.4.1 Selecting a scraper</a></li>
 </ul>
 </li>
-<li><a href="#sec-5">5 2 Paths</a>
+<li><a href="#sec-4-5">4.5 The Scraper</a>
 <ul>
-<li><a href="#sec-5-1">5.1 How to get Same Origin image data to the back end and imported.</a>
-<ul>
-<li><a href="#sec-5-1-1">5.1.1 Use HTML Canvas to get a datURL.</a></li>
-<li><a href="#sec-5-1-2">5.1.2 Send it to wallpaperrr via postMessage and JSON</a></li>
-<li><a href="#sec-5-1-3">5.1.3 Implement an extension and java-image multimethod for (class (byte-array 1))</a></li>
+<li><a href="#sec-4-5-1">4.5.1 Calling the scraper</a></li>
 </ul>
 </li>
-<li><a href="#sec-5-2">5.2 How to fix importing wallpaper from thefoxisblack.</a>
+<li><a href="#sec-4-6">4.6 The <code>iframe</code></a>
 <ul>
-<li><a href="#sec-5-2-1">5.2.1 Set your user-agent in the URLConnection</a></li>
+<li><a href="#sec-4-6-1">4.6.1 Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it.</a></li>
+</ul>
+</li>
+<li><a href="#sec-4-7">4.7 <code>postMessage</code> to site</a>
+<ul>
+<li><a href="#sec-4-7-1">4.7.1 :notes:</a></li>
+</ul>
+</li>
+<li><a href="#sec-4-8">4.8 <code>postMessage</code> to site</a></li>
+<li><a href="#sec-4-9">4.9 <code>postMessage</code> to site</a></li>
+<li><a href="#sec-4-10">4.10 <code>postMessage</code> to Wallpaperrr</a></li>
+<li><a href="#sec-4-11">4.11 A fork</a></li>
+<li><a href="#sec-4-12">4.12 What we've got</a>
+<ul>
+<li><a href="#sec-4-12-1">4.12.1 notes</a></li>
+</ul>
+</li>
+<li><a href="#sec-4-13">4.13 <code>postMessage</code> (sans Base64)</a>
+<ul>
+<li><a href="#sec-4-13-1">4.13.1 Nothing much to do here</a></li>
 </ul></li>
 </ul>
 </li>
-<li><a href="#sec-6">6 Client-Side Concerns</a>
+<li><a href="#sec-5">5 Using the JSON</a>
 <ul>
-<li><a href="#sec-6-1">6.1 Base64 encoding</a>
+<li><a href="#sec-5-1">5.1 Basic Notes</a></li>
+<li><a href="#sec-5-2">5.2 The Back End Process</a>
 <ul>
-<li><a href="#sec-6-1-1">6.1.1 HTML Canvas, toDataURI</a></li>
-<li><a href="#sec-6-1-2">6.1.2 countdown latch</a></li>
+<li><a href="#sec-5-2-1">5.2.1 The Back End Process</a></li>
 </ul>
 </li>
-<li><a href="#sec-6-2">6.2 Cross-Domain Scripts (Same Origin Policy)</a>
+<li><a href="#sec-5-3">5.3 A Ring App</a>
 <ul>
-<li><a href="#sec-6-2-1">6.2.1 iframe communication via message posting</a></li>
+<li><a href="#sec-5-3-1">5.3.1 Anatomy of a Ring App</a></li>
 </ul>
 </li>
-<li><a href="#sec-6-3">6.3 I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.</a></li>
+<li><a href="#sec-5-4">5.4 A Compojure Route</a>
+<ul>
+<li><a href="#sec-5-4-1">5.4.1 Anatomy of a Compojure route</a></li>
 </ul>
 </li>
-<li><a href="#sec-7">7 Server-Side Concerns</a>
+<li><a href="#sec-5-5">5.5 The Transaction Script</a>
 <ul>
-<li><a href="#sec-7-1">7.1 Decoding Base64 data</a>
+<li><a href="#sec-5-5-1">5.5.1 The Transaction Script</a>
 <ul>
-<li><a href="#sec-7-1-1">7.1.1 Java's got that</a></li>
-<li><a href="#sec-7-1-2">7.1.2 dataURIs are not base64 data</a></li>
+<li><a href="#sec-5-5-1-1">5.5.1.1 The Transaction Script</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-2">7.2 Using Base64 data as an image</a>
-<ul>
-<li><a href="#sec-7-2-1">7.2.1 clojure multimethods with class as the dispatch function `(class (byte-array 1))`</a></li>
+<li><a href="#sec-5-5-2">5.5.2 Expanding the source URIs</a></li>
+<li><a href="#sec-5-5-3">5.5.3 Expanding the source URIs</a></li>
+<li><a href="#sec-5-5-4">5.5.4 source-uris-&gt;importable-wallpaper</a></li>
+<li><a href="#sec-5-5-5">5.5.5 Add to the user's library</a></li>
+<li><a href="#sec-5-5-6">5.5.6 Download Each source URI</a></li>
+<li><a href="#sec-5-5-7">5.5.7 Thumbnailization</a></li>
+<li><a href="#sec-5-5-8">5.5.8 Delete the Temporary Files</a></li>
+<li><a href="#sec-5-5-9">5.5.9 Return the Map</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-3">7.3 Setting a URLConnection's User-Agent string</a>
+<li><a href="#sec-5-6">5.6 Send the Response</a></li>
+<li><a href="#sec-5-7">5.7 Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</a></li>
+<li><a href="#sec-5-8">5.8 Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server</a></li>
+</ul>
+</li>
+<li><a href="#sec-6">6 But what about …</a>
 <ul>
-<li><a href="#sec-7-3-1">7.3.1 Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</a></li>
+<li><a href="#sec-6-1">6.1 notes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7">7 2 Paths</a>
+<ul>
+<li><a href="#sec-7-1">7.1 How to get Same Origin image data to the back end and imported.</a>
+<ul>
+<li><a href="#sec-7-1-1">7.1.1 Use HTML Canvas to get a datURL.</a></li>
+<li><a href="#sec-7-1-2">7.1.2 Send it to wallpaperrr via postMessage and JSON</a></li>
+<li><a href="#sec-7-1-3">7.1.3 Implement an extension and java-image multimethod for (class (byte-array 1))</a>
+<ul>
+<li><a href="#sec-7-1-3-1">7.1.3.1 Everything else just works</a></li>
 </ul></li>
 </ul>
 </li>
-<li><a href="#sec-8">8 Further experiments</a>
+<li><a href="#sec-7-2">7.2 How to fix importing wallpaper from thefoxisblack.</a>
 <ul>
-<li><a href="#sec-8-1">8.1 Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe.</a></li>
+<li><a href="#sec-7-2-1">7.2.1 Set your user-agent in the URLConnection</a></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-8">8 Client-Side Concerns</a>
+<ul>
+<li><a href="#sec-8-1">8.1 Base64 encoding</a>
+<ul>
+<li><a href="#sec-8-1-1">8.1.1 HTML Canvas, toDataURI</a></li>
+<li><a href="#sec-8-1-2">8.1.2 countdown latch</a></li>
+</ul>
+</li>
+<li><a href="#sec-8-2">8.2 Cross-Domain Scripts (Same Origin Policy)</a>
+<ul>
+<li><a href="#sec-8-2-1">8.2.1 iframe communication via message posting</a>
+<ul>
+<li><a href="#sec-8-2-1-1">8.2.1.1 Each window can be the target of a message. If you post messages directly to the window, you don't need to be concerned with doubling up on handlers</a></li>
+<li><a href="#sec-8-2-1-2">8.2.1.2 You want to know who's talking to whom, so we include the target attribute.</a></li>
+<li><a href="#sec-8-2-1-3">8.2.1.3 Dispatch tables help us line a particular message up with a function.</a></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-8-3">8.3 I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.</a></li>
+</ul>
+</li>
+<li><a href="#sec-9">9 Server-Side Concerns</a>
+<ul>
+<li><a href="#sec-9-1">9.1 Decoding Base64 data</a>
+<ul>
+<li><a href="#sec-9-1-1">9.1.1 Java's got that</a></li>
+<li><a href="#sec-9-1-2">9.1.2 dataURIs are not base64 data</a></li>
+</ul>
+</li>
+<li><a href="#sec-9-2">9.2 Using Base64 data as an image</a>
+<ul>
+<li><a href="#sec-9-2-1">9.2.1 clojure multimethods with class as the dispatch function `(class (byte-array 1))`</a></li>
+</ul>
+</li>
+<li><a href="#sec-9-3">9.3 Setting a URLConnection's User-Agent string</a>
+<ul>
+<li><a href="#sec-9-3-1">9.3.1 Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</a></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-10">10 Further experiments</a>
+<ul>
+<li><a href="#sec-10-1">10.1 Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe</a></li>
 </ul>
 </li>
 </ul>
@@ -134,6 +235,9 @@
 <li>Relay Network
 
 </li>
+<li>I have a problem
+
+</li>
 <li><a href="http://wallpaperrr.cc">Wallpaperrrr</a>
 </li>
 </ul>
@@ -142,9 +246,9 @@
 
 </div>
 
-<div id="outline-container-1-1" class="outline-3">
-<h3 id="sec-1-1"><span class="section-number-3">1.1</span> slide notes &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h3>
-<div class="outline-text-3" id="text-1-1">
+<div id="outline-container-1-1" class="outline-4">
+<h4 id="sec-1-1"><span class="section-number-4">1.1</span> slide notes &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-1-1">
 
 
 <ul>
@@ -165,14 +269,8 @@
 </div>
 
 <div id="outline-container-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> Importing an Image &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
+<h2 id="sec-2"><span class="section-number-2">2</span> <code>POST</code> an Image to the server &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-2">
-
-
-<ul>
-<li><code>POST</code> a JSON Blob to the server
-</li>
-</ul>
 
 
 
@@ -192,9 +290,9 @@
 
 </div>
 
-<div id="outline-container-2-1" class="outline-3">
-<h3 id="sec-2-1"><span class="section-number-3">2.1</span> notes &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h3>
-<div class="outline-text-3" id="text-2-1">
+<div id="outline-container-2-1" class="outline-4">
+<h4 id="sec-2-1"><span class="section-number-4">2.1</span> notes &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-2-1">
 
 
 <ul>
@@ -218,7 +316,7 @@
 </div>
 
 <div id="outline-container-3" class="outline-2">
-<h2 id="sec-3"><span class="section-number-2">3</span> A better JSON Blob &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
+<h2 id="sec-3"><span class="section-number-2">3</span> A better <code>POST</code> body? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-3">
 
 
@@ -239,19 +337,34 @@
 
 </div>
 
-<div id="outline-container-3-1" class="outline-3">
-<h3 id="sec-3-1"><span class="section-number-3">3.1</span> notes &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h3>
-<div class="outline-text-3" id="text-3-1">
+<div id="outline-container-3-1" class="outline-4">
+<h4 id="sec-3-1"><span class="section-number-4">3.1</span> notes &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-3-1">
 
 
 <ul>
-<li>So far I've been taking the strategy that I can send back a simple JSON blob from a site that a user wants to import consisting of
+<li>Advantages
+
+<ul>
+<li>Get's me the image data directly from the client, which already has the data!
 
 </li>
-<li>What I'd prefer, in deference to the servers I'm importing from, would be to send something more like this
+<li>Offloads downloading the image to the client, which saves me from getting black-listed
 
 </li>
-<li>Thus offloading the resonsibility of downloading the image to each of my clients and allowing them to stream it directly to me.
+</ul>
+
+</li>
+<li>Disadvantages
+
+<ul>
+<li>Client's with low-bandwidth get hammered.
+
+</li>
+<li>Same Origin Policy!
+</li>
+</ul>
+
 </li>
 </ul>
 
@@ -262,79 +375,128 @@
 </div>
 
 <div id="outline-container-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> The Story</h2>
+<h2 id="sec-4"><span class="section-number-2">4</span> Obtaining the JSON &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-4">
 
 
-<p>
-  The reason for most of the rigamoral that follows is that frames are not allowed to access eachother's DOMs. The purpose of the bookmarklet is thus to insert the message recipient shim into the source page. The purpose of message recipient shim is to obtain the title, source, and sourceUris from the source page, and be able to post them back to the iframe containing wallpaperrr. The bookmarklet site then posts that data back to the server and allows the user to interact with the recently imported wallpaper in some ways.
-</p>
+<ul>
+<li>A bookmarklet
+</li>
+<li>A scraper
+</li>
+<li>An <code>iframe</code>
+</li>
+<li><a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/web-messaging.html#web-messaging"><code>postMessage</code></a>
+</li>
+</ul>
+
+
+
+</div>
+
+<div id="outline-container-4-1" class="outline-4">
+<h4 id="sec-4-1"><span class="section-number-4">4.1</span> The Process &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-1">
+
+
+<ul>
+<li>The Process
+<ul>
+<li>Insert a script from Wallpaperrr into source site
+</li>
+<li>Scrape site for a title, source, and sourceUri(s)
+</li>
+<li><code>onload</code> of the iframe, post <code>gimme-data</code> message to <code>window.parent</code>
+</li>
+<li>on <code>gimme-data</code> message, post <code>import-data</code> message back to <code>event.source</code>
+<ul>
+<li>Actually, there's a fork here. We can either gather up the sourceURIs directly and do nothing else, or we can grab canvas data.
+</li>
+</ul>
+
+</li>
+<li>on <code>import-data</code> message, <code>POST</code> <code>import-data</code> JSON back to server
+</li>
+</ul>
+
+</li>
+<li>Things to remember
+<ul>
+<li>Cross-domain script communication is verbotten.
+</li>
+<li>Scripts from one frame on one domain can't access another's frame's DOM
+</li>
+<li>You're stuck with messaging
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
 
 </div>
 
 <div id="outline-container-4-1" class="outline-3">
-<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Insert a script from wallpaperrr into source site</h3>
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> The bookmarklet &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-4-1">
 
 
 
 
 
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">wallpaperrr&#8230;</span>
-<span style="color: #00cd00;">var</span> <span style="color: #0000ee;">d</span>=document,
+<pre class="src src-js"><span style="color: #00cd00;">var</span> <span style="color: #0000ee;">d</span>=document,
     z=d.createElement(<span style="color: #00cdcd;">'scr'</span>+<span style="color: #00cdcd;">'ipt'</span>),
     b=d.body;
 
-<span style="color: #00cd00;">try</span> {
-  <span style="color: #00cd00;">if</span>(!b) {
-    <span style="color: #00cd00;">throw</span> (0);
-  }
-  z.setAttribute(<span style="color: #00cdcd;">'src'</span>,<span style="color: #00cdcd;">'http://localhost:3000/js/import.js'</span>);
-  b.appendChild(z);
-} <span style="color: #00cd00;">catch</span> (e) {
-  alert(<span style="color: #00cdcd;">'Please wait until the page has loaded.'</span>);
+<span style="color: #00cd00;">if</span>(!b) {
+  <span style="color: #00cd00;">throw</span> (0);
 }
+z.setAttribute(<span style="color: #00cdcd;">'src'</span>,<span style="color: #00cdcd;">'http://localhost:3000/js/import.js'</span>);
+b.appendChild(z);
 
-<span style="color: #00cd00;">void</span>(0)
 </pre>
 
 
+
+</div>
+
+<div id="outline-container-4-1-1" class="outline-4">
+<h4 id="sec-4-1-1"><span class="section-number-4">4.1.1</span> our bootstraperr &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-1-1">
+
+
+<ul>
+<li>responsible for scraping the site
+<ul>
+<li>as it's loaded into the window's DOM directly, it has access to it
+</li>
+</ul>
+
+</li>
+<li>responsible for inserting the iframe it will be talking to
+</li>
+</ul>
+
+
+</div>
 </div>
 
 </div>
 
 <div id="outline-container-4-2" class="outline-3">
-<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Scrape site looking for title, source, and sourceUri(s)</h3>
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> The Scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-4-2">
 
 
 
-</div>
-
-<div id="outline-container-4-2-1" class="outline-4">
-<h4 id="sec-4-2-1"><span class="section-number-4">4.2.1</span> The anatomy of a scraper</h4>
-<div class="outline-text-4" id="text-4-2-1">
 
 
-<p>
-    I need 3 things: title, source, and the uris.
-</p>
-<p>
-    Title is used as the title of the wallpaper in your library as well as the name of the wallpaper file on downloading it.
-</p>
-<p>
-    Source is used to to link back to the source if others want to import that wallpaper.
-</p>
-<p>
-    Source URIs are used to download the actual wallpapers. Alternatively to the source URIs, I could have a series of base64 strings.
-</p>
-
-
-
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">import.js</span>
-wallpaperrrScraper.thefoxisblackScraper = <span style="color: #00cd00;">function</span> () {
+<pre class="src src-js">wallpaperrrScraper.thefoxisblackScraper = <span style="color: #00cd00;">function</span> () {
   <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">aNodes</span>, <span style="color: #0000ee;">imageUrls</span>, <span style="color: #0000ee;">i</span>;
-  wallpaperrrScraper.title = document.querySelector(<span style="color: #00cdcd;">'.post h2 a'</span>).textContent;
+  wallpaperrrScraper.title =
+    document.querySelector(<span style="color: #00cdcd;">'.post h2 a'</span>).textContent;
   aNodes = document.querySelectorAll(<span style="color: #00cdcd;">'#wallpaper a'</span>);
   imageUrls = [];
   <span style="color: #00cd00;">for</span> (i = 0; i &lt; aNodes.length; i += 1) {
@@ -348,40 +510,26 @@ wallpaperrrScraper.thefoxisblackScraper = <span style="color: #00cd00;">function
 
 
 
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">import.js</span>
-wallpaperrrScraper.scraperDispatch = {
-  <span style="color: #00cdcd;">"thefoxisblack.com"</span>:                 wallpaperrrScraper.thefoxisblackScraper,
-  <span style="color: #00cdcd;">"10.0.0.*"</span>:                          wallpaperrrScraper.localhostScraper,
-};
-</pre>
+</div>
+
+<div id="outline-container-4-2-1" class="outline-4">
+<h4 id="sec-4-2-1"><span class="section-number-4">4.2.1</span> The anatomy of a scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-2-1">
 
 
+<ul>
+<li>I need 3 things: title, source, and the uris.
 
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">import.js</span>
-wallpaperrrScraper.scrapeSite = <span style="color: #00cd00;">function</span> () {
+</li>
+<li>Title is used as the title of the wallpaper in your library as well as the name of the wallpaper file on downloading it.
 
-  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">siteScraper</span>, <span style="color: #0000ee;">siteMatch</span>;
+</li>
+<li>Source is used to to link back to the source if others want to import that wallpaper.
 
-  <span style="color: #00cd00;">for</span> (siteMatch <span style="color: #00cd00;">in</span> wallpaperrrScraper.scraperDispatch) {
-    <span style="color: #00cd00;">if</span> (wallpaperrrScraper.scraperDispatch.hasOwnProperty(siteMatch)) {
-      <span style="color: #00cd00;">if</span> (document.baseURI.match(siteMatch)) {
-        siteScraper = wallpaperrrScraper.scraperDispatch[siteMatch];
-        <span style="color: #00cd00;">break</span>;
-      }
-    }
-  }
-
-  <span style="color: #00cd00;">if</span> (siteScraper) {
-    siteScraper();
-    <span style="color: #00cd00;">return</span> <span style="color: #00cdcd;">true</span>;
-  }
-
-  wallpaperrrScraper.defaultScraper();
-  <span style="color: #00cd00;">return</span> <span style="color: #00cdcd;">true</span>;
-
-};
-</pre>
-
+</li>
+<li>Source URIs are used to download the actual wallpapers. Alternatively to the source URIs, I could have a series of base64 strings.
+</li>
+</ul>
 
 
 </div>
@@ -390,8 +538,133 @@ wallpaperrrScraper.scrapeSite = <span style="color: #00cd00;">function</span> ()
 </div>
 
 <div id="outline-container-4-3" class="outline-3">
-<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it.</h3>
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> The Scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-4-3">
+
+
+
+
+
+<pre class="src src-js">wallpaperrrScraper.scraperDispatch = {
+  <span style="color: #00cdcd;">"thefoxisblack.com"</span>: wallpaperrrScraper.thefoxisblackScraper,
+  <span style="color: #00cdcd;">"10.0.0.*"</span>:          wallpaperrrScraper.localhostScraper,
+};
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-4-3-1" class="outline-4">
+<h4 id="sec-4-3-1"><span class="section-number-4">4.3.1</span> The dispatch table &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-3-1">
+
+
+<ul>
+<li>Dispatch tables are nice! I picked them up from Relay.
+
+</li>
+<li>Anyone can assoc into them, potentially opening up extensions without code redeployment.
+
+</li>
+<li>This particular stricture is nice because I can use regexs
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4-4" class="outline-3">
+<h3 id="sec-4-4"><span class="section-number-3">4.4</span> The Scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-4-4">
+
+
+
+
+
+<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">man, I want underscore!</span>
+wallpaperrrScraper.matchingScraper = <span style="color: #00cd00;">function</span> (<span style="color: #0000ee;">sitePattern</span>) {
+  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">siteMatch</span>;
+  <span style="color: #00cd00;">for</span> (siteMatch <span style="color: #00cd00;">in</span> wallpaperrrScraper.scraperDispatch) {
+    <span style="color: #00cd00;">if</span> (wallpaperrrScraper.scraperDispatch
+        .hasOwnProperty(siteMatch)) {
+      <span style="color: #00cd00;">if</span> (document.baseURI.match(sitePattern)) {
+        <span style="color: #00cd00;">return</span> wallpaperrrScraper.scraperDispatch[siteMatch];
+      }
+    }
+  }
+};
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-4-4-1" class="outline-4">
+<h4 id="sec-4-4-1"><span class="section-number-4">4.4.1</span> Selecting a scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-4-1">
+
+
+<ul>
+<li>If I were using underscore, this'd be a lot easier. Que Sera, Sera.
+</li>
+<li>Remember to use <code>hasOwnProperty</code> if you're iterating over an object's properties.
+</li>
+<li>Passing a string to <code>match</code> works nicely and allows us to use regexs.
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4-5" class="outline-3">
+<h3 id="sec-4-5"><span class="section-number-3">4.5</span> The Scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-4-5">
+
+
+
+
+
+<pre class="src src-js">wallpaperrrScraper.scrapeSite = <span style="color: #00cd00;">function</span> () {
+  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">siteScraper</span>;
+
+  siteScraper = wallpaperrrScraper.matchingScraper();
+
+  <span style="color: #00cd00;">return</span> siteScraper ? siteScraper() : wallpaperrrScraper.defaultScraper();
+};
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-4-5-1" class="outline-4">
+<h4 id="sec-4-5-1"><span class="section-number-4">4.5.1</span> Calling the scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-5-1">
+
+
+<ul>
+<li>We provide a default scraper.
+</li>
+<li>A saner language would let me get a key out of a map with a default.
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4-6" class="outline-3">
+<h3 id="sec-4-6"><span class="section-number-3">4.6</span> The <code>iframe</code></h3>
+<div class="outline-text-3" id="text-4-6">
 
 
 
@@ -410,189 +683,99 @@ wallpaperrrScraper.insertIFrame = <span style="color: #00cd00;">function</span> 
 </pre>
 
 
-</div>
 
 </div>
 
-<div id="outline-container-4-4" class="outline-3">
-<h3 id="sec-4-4"><span class="section-number-3">4.4</span> Once iframe is loaded, ask parent window to give me the data through postMessage</h3>
-<div class="outline-text-3" id="text-4-4">
+<div id="outline-container-4-6-1" class="outline-4">
+<h4 id="sec-4-6-1"><span class="section-number-4">4.6.1</span> Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it. &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-6-1">
 
 
-
-
-
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">bookmarklet-import.js</span>
-wallpaperrrBookmarkletImport.doImport = <span style="color: #00cd00;">function</span> () {
-  window.addEventListener(<span style="color: #00cdcd;">'message'</span>, wallpaperrrBookmarkletImport.receiveMessage);
-  window.parent.postMessage(<span style="color: #00cdcd;">'wallpaperSite:::gimme-import-data'</span>, <span style="color: #00cdcd;">'*'</span>);
-};
-</pre>
+<ul>
+<li>We position it fixed at the top left so it looks nice and doesn't matter in what context it is inserted in.
+</li>
+<li>Love that <code>z-index</code>
+</li>
+</ul>
 
 
 </div>
-
-</div>
-
-<div id="outline-container-4-5" class="outline-3">
-<h3 id="sec-4-5"><span class="section-number-3">4.5</span> Upon receiving the gimme-data message, postMessage back to the iframe with the importData in a JSON String</h3>
-<div class="outline-text-3" id="text-4-5">
-
-
-
-
-
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">import.js</span>
-<span style="color: #00cd00;">var</span> <span style="color: #0000ee;">messageHandlers</span> = {
-  <span style="color: #00cdcd;">'gimme-import-data'</span>: postImportDataMessage
-};
-</pre>
-
-
-
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">import.js, bookmarket-import.js</span>
-<span style="color: #00cd00;">var</span> <span style="color: #0000ee;">parseMessage</span> = <span style="color: #00cd00;">function</span> (<span style="color: #0000ee;">message</span>) {
-  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">messageParts</span>, <span style="color: #0000ee;">payload</span>;
-
-  messageParts = message.split(<span style="color: #00cdcd;">':::'</span>);
-  <span style="color: #00cd00;">if</span> (messageParts[2]) {
-    <span style="color: #00cd00;">try</span> {
-      payload = JSON.parse(messageParts[2]);
-    }
-    <span style="color: #00cd00;">catch</span> (e) {
-      payload = messageParts[2];
-    }
-  }
-
-  <span style="color: #00cd00;">return</span> {
-    <span style="color: #00cdcd;">'target'</span>: messageParts[0],
-    <span style="color: #00cdcd;">'title'</span>: messageParts[1],
-    <span style="color: #00cdcd;">'payload'</span>: payload
-  };
-};
-</pre>
-
-
-
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">import.js</span>
-<span style="color: #00cd00;">function</span> <span style="color: #0000ee;">handleMessage</span>(<span style="color: #0000ee;">e</span>) {
-  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">message</span>;
-
-  message = parseMessage(e.data);
-
-  <span style="color: #00cd00;">if</span> (<span style="color: #00cdcd;">'wallpaperSite'</span> !== message.target) {
-    <span style="color: #00cd00;">return</span> <span style="color: #00cdcd;">false</span>;
-  }
-
-  <span style="color: #00cd00;">if</span> (messageHandlers[message.title]) {
-    <span style="color: #00cd00;">return</span> messageHandlers[message.title](e, message.payload);
-  }
-
-  console.info(<span style="color: #00cdcd;">'Can\'t deal with message: %o'</span>, message);
-}
-
-window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMessage);
-</pre>
-
-
-
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">import.js</span>
-<span style="color: #00cd00;">var</span> <span style="color: #0000ee;">postImportDataMessage</span> = <span style="color: #00cd00;">function</span> (<span style="color: #0000ee;">e</span>) {
-  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">payload</span>;
-  payload = JSON.stringify({
-    <span style="color: #00cdcd;">'title'</span>: Wallpaperrr.Scraper.title,
-    <span style="color: #00cdcd;">'sourceUri'</span>: Wallpaperrr.Scraper.sourceUri,
-    <span style="color: #00cdcd;">'source'</span>: Wallpaperrr.Scraper.source,
-    <span style="color: #00cdcd;">'merge'</span>: Wallpaperrr.Scraper.merge
-  });
-  e.source.postMessage(<span style="color: #00cdcd;">"wallpaperrr:::import-data:::"</span> + payload, <span style="color: #00cdcd;">'*'</span>);
-};
-</pre>
-
-
-</div>
-
-</div>
-
-<div id="outline-container-4-6" class="outline-3">
-<h3 id="sec-4-6"><span class="section-number-3">4.6</span> Take the import data and post it to wallpaperrr.</h3>
-<div class="outline-text-3" id="text-4-6">
-
-
-
-
-
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">bookmarklet-import.js</span>
-wallpaperrrBookmarkletImport.imgsLoaded = <span style="color: #00cd00;">function</span> (<span style="color: #0000ee;">importData</span>) {
-  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">x</span>;
-
-  x = wallpaperrrBookmarkletImport.importRequest();
-
-  x.send(JSON.stringify(importData));
-  Wallpaperrr.Functions.showElement(document.getElementById(<span style="color: #00cdcd;">'importing-header'</span>));
-};
-</pre>
-
-
-
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">bookmarklet-import.js</span>
-wallpaperrrBookmarkletImport.importRequest = <span style="color: #00cd00;">function</span> () {
-    <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">x</span> = <span style="color: #00cd00;">new</span> <span style="color: #cdcd00;">XMLHttpRequest</span>();
-    x.open(<span style="color: #00cdcd;">'POST'</span>, <span style="color: #00cdcd;">'/wallpaper'</span>);
-    x.setRequestHeader(<span style="color: #00cdcd;">'Content-Type'</span>, <span style="color: #00cdcd;">'application/json'</span>);
-    x.setRequestHeader(<span style="color: #00cdcd;">'Accept'</span>, <span style="color: #00cdcd;">'application/json;q=0.0'</span>);
-    x.onreadystatechange = <span style="color: #00cd00;">function</span> () {
-      <span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">horrifically complicated logic ellided</span>
-    };
-    <span style="color: #00cd00;">return</span> x;
-  };
-</pre>
-
-
-
 </div>
 
 </div>
 
 <div id="outline-container-4-7" class="outline-3">
-<h3 id="sec-4-7"><span class="section-number-3">4.7</span> On the back end:</h3>
+<h3 id="sec-4-7"><span class="section-number-3">4.7</span> <code>postMessage</code> to site &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-4-7">
 
 
+
+
+
+<pre class="src src-js">wallpaperrrBookmarkletImport.doImport = <span style="color: #00cd00;">function</span> () {
+  window.addEventListener(
+    <span style="color: #00cdcd;">'message'</span>,
+    wallpaperrrBookmarkletImport.receiveMessage);
+  window.parent.postMessage(
+    {
+      <span style="color: #00cdcd;">'target'</span>: <span style="color: #00cdcd;">'wallpaperSite'</span>,
+      <span style="color: #00cdcd;">'title'</span>: <span style="color: #00cdcd;">'gimme-import-data'</span>
+    },
+    <span style="color: #00cdcd;">'*'</span>);
+};
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-4-7-1" class="outline-4">
+<h4 id="sec-4-7-1"><span class="section-number-4">4.7.1</span> &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-7-1">
+
+</div>
 </div>
 
 </div>
 
 <div id="outline-container-4-8" class="outline-3">
-<h3 id="sec-4-8"><span class="section-number-3">4.8</span> Receive json POST and parse it apart.</h3>
+<h3 id="sec-4-8"><span class="section-number-3">4.8</span> <code>postMessage</code> to site &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-4-8">
 
 
 
-</div>
-
-<div id="outline-container-4-8-1" class="outline-4">
-<h4 id="sec-4-8-1"><span class="section-number-4">4.8.1</span> We use Ring Middleware to destructure the JSON Body automatically and put it into the `params` map.</h4>
-<div class="outline-text-4" id="text-4-8-1">
 
 
-
-
-
-<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">def</span> <span style="color: #0000ee;">app</span>
-  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">-&gt;</span> #'routes/main-routes
-      wrap-json-params<span style="color: #8a8a8a;">))</span>
+<pre class="src src-js"><span style="color: #00cd00;">var</span> <span style="color: #0000ee;">messageHandlers</span> = {
+  <span style="color: #00cdcd;">'gimme-import-data'</span>: postImportDataMessage
+};
 </pre>
 
 
-</div>
 </div>
 
 </div>
 
 <div id="outline-container-4-9" class="outline-3">
-<h3 id="sec-4-9"><span class="section-number-3">4.9</span> Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</h3>
+<h3 id="sec-4-9"><span class="section-number-3">4.9</span> <code>postMessage</code> to site &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-4-9">
+
+
+
+
+
+<pre class="src src-js"><span style="color: #00cd00;">function</span> <span style="color: #0000ee;">handleMessage</span>(<span style="color: #0000ee;">e</span>) {
+  <span style="color: #00cd00;">if</span> (<span style="color: #00cdcd;">'wallpaperSite'</span> !== e.data.target) {
+    <span style="color: #00cd00;">return</span> <span style="color: #00cdcd;">false</span>;
+  }
+
+  <span style="color: #00cd00;">if</span> (messageHandlers[e.data.title]) {
+    <span style="color: #00cd00;">return</span> messageHandlers[e.data.title](e, e.data.payload);
+  }
+}
+
+window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMessage);
+</pre>
 
 
 </div>
@@ -600,109 +783,612 @@ wallpaperrrBookmarkletImport.importRequest = <span style="color: #00cd00;">funct
 </div>
 
 <div id="outline-container-4-10" class="outline-3">
-<h3 id="sec-4-10"><span class="section-number-3">4.10</span> Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server.</h3>
+<h3 id="sec-4-10"><span class="section-number-3">4.10</span> <code>postMessage</code> to Wallpaperrr &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-4-10">
 
 
+
+
+
+<pre class="src src-js"><span style="color: #00cd00;">var</span> <span style="color: #0000ee;">postImportDataMessage</span> = <span style="color: #00cd00;">function</span> (<span style="color: #0000ee;">e</span>) {
+  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">payload</span>;
+  payload = {
+    <span style="color: #00cdcd;">'title'</span>: Wallpaperrr.Scraper.title,
+    <span style="color: #00cdcd;">'sourceUri'</span>: Wallpaperrr.Scraper.sourceUri,
+    <span style="color: #00cdcd;">'source'</span>: Wallpaperrr.Scraper.source,
+    <span style="color: #00cdcd;">'merge'</span>: Wallpaperrr.Scraper.merge
+  };
+  e.source.postMessage(payload, <span style="color: #00cdcd;">'*'</span>);
+};
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-11" class="outline-3">
+<h3 id="sec-4-11"><span class="section-number-3">4.11</span> A fork &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-4-11">
+
+
+<ol>
+<li>URIs
+</li>
+<li>Base64
+</li>
+</ol>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-12" class="outline-3">
+<h3 id="sec-4-12"><span class="section-number-3">4.12</span> What we've got &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-4-12">
+
+
+
+
+
+<pre class="src src-js">{
+  <span style="color: #00cdcd;">'title'</span>: <span style="color: #00cdcd;">'foo'</span>,
+  <span style="color: #00cdcd;">'source'</span>: <span style="color: #00cdcd;">'http://localhost/foo/'</span>,
+  <span style="color: #00cdcd;">'sourceUri'</span>: [
+    <span style="color: #00cdcd;">'http://localhost/foo_1920x1080.png'</span>,
+    <span style="color: #00cdcd;">'http://localhost/foo_1280x800.png'</span>
+  ]
+}
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-4-12-1" class="outline-4">
+<h4 id="sec-4-12-1"><span class="section-number-4">4.12.1</span> notes &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-12-1">
+
+
+<ul>
+<li>Basic functionality is fine. Simply download each sourceUri on the back end
+</li>
+<li>Downsides
+<ul>
+<li>Risk getting black-listed if you become popular
+</li>
+<li>Can be bad for the receiving server to be hit twice for the same image (wallbase.cc)
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4-13" class="outline-3">
+<h3 id="sec-4-13"><span class="section-number-3">4.13</span> <code>postMessage</code> (sans Base64) &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-4-13">
+
+
+
+
+
+<pre class="src src-js">wallpaperrrBookmarkletImport.imgsLoaded = <span style="color: #00cd00;">function</span> (<span style="color: #0000ee;">importData</span>) {
+  wallpaperrrBookmarkletImport.importRequest()
+    .send(JSON.stringify(importData));
+  Wallpaperrr.Functions
+    .showElement(
+      document.getElementById(<span style="color: #00cdcd;">'importing-header'</span>)
+    );
+};
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-4-13-1" class="outline-4">
+<h4 id="sec-4-13-1"><span class="section-number-4">4.13.1</span> Nothing much to do here &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-4-13-1">
+
+</div>
 </div>
 </div>
 
 </div>
 
 <div id="outline-container-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> 2 Paths</h2>
+<h2 id="sec-5"><span class="section-number-2">5</span> Using the JSON &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-5">
+
+
+<ul>
+<li>A Compojure <code>POST</code> Route
+</li>
+<li>Some Ring <code>middleware</code>
+</li>
+<li>Some Clojure =multimethod=s
+</li>
+<li>javax.imageio.ImageIO
+</li>
+<li>org.jdesktop.swingx.graphics.GraphicsUtilities
+</li>
+</ul>
 
 
 
 </div>
 
 <div id="outline-container-5-1" class="outline-3">
-<h3 id="sec-5-1"><span class="section-number-3">5.1</span> How to get Same Origin image data to the back end and imported.</h3>
+<h3 id="sec-5-1"><span class="section-number-3">5.1</span> Basic Notes &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h3>
 <div class="outline-text-3" id="text-5-1">
 
 
-
-</div>
-
-<div id="outline-container-5-1-1" class="outline-4">
-<h4 id="sec-5-1-1"><span class="section-number-4">5.1.1</span> Use HTML Canvas to get a datURL.</h4>
-<div class="outline-text-4" id="text-5-1-1">
-
-
-</div>
-
-</div>
-
-<div id="outline-container-5-1-2" class="outline-4">
-<h4 id="sec-5-1-2"><span class="section-number-4">5.1.2</span> Send it to wallpaperrr via postMessage and JSON</h4>
-<div class="outline-text-4" id="text-5-1-2">
-
-
-</div>
-
-</div>
-
-<div id="outline-container-5-1-3" class="outline-4">
-<h4 id="sec-5-1-3"><span class="section-number-4">5.1.3</span> Implement an extension and java-image multimethod for (class (byte-array 1))</h4>
-<div class="outline-text-4" id="text-5-1-3">
-
-
 <ul>
-<li id="sec-5-1-3-1">Everything else just works<br/>
+<li>We support Zip Files, Straight URIS, and now Base64 Strings
+</li>
+<li>Middleware is cool (apparently comes from Rails?)
+</li>
+<li>Java's big. Has 'good' image libraries. Can throw out of memory errors when handling large files. This is something I think I'm going to pay someone else to do.
+</li>
+<li>Core <code>multimethods</code>
+<ul>
+<li>Requests are handled by <code>multimethods</code> dispatching on the <code>accept-header</code>
+</li>
+<li>URIs are converted to <code>BufferedImage</code>, dispatching on the <code>class</code> of the input
+</li>
+<li>Extensions are retrieved, dispatching on <code>class</code>
 </li>
 </ul>
-</div>
+
+</li>
+</ul>
+
+
 </div>
 
 </div>
 
 <div id="outline-container-5-2" class="outline-3">
-<h3 id="sec-5-2"><span class="section-number-3">5.2</span> How to fix importing wallpaper from thefoxisblack.</h3>
+<h3 id="sec-5-2"><span class="section-number-3">5.2</span> The Back End Process &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-5-2">
 
 
+<p>
+   <img src="images/the_process.png"  alt="images/the_process.png" />
+</p>
 
 </div>
 
 <div id="outline-container-5-2-1" class="outline-4">
-<h4 id="sec-5-2-1"><span class="section-number-4">5.2.1</span> Set your user-agent in the URLConnection</h4>
+<h4 id="sec-5-2-1"><span class="section-number-4">5.2.1</span> The Back End Process &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
 <div class="outline-text-4" id="text-5-2-1">
 
+
+<ul>
+<li>The Process
+<ol>
+<li><code>POST</code> route receives the request and destructures the JSON using middleware into function parameters.
+</li>
+<li>The <code>POST</code> route multimethod responsible for JSON accept headers takes over, passing the data through to the wallpaper model transaction script namespace
+</li>
+<li>We expand the source uris, turning Zip files into multiple temporary files
+</li>
+<li>We transform the expanded source uris into importable wallpapers
+
+
+
+<pre class="src src-clojure">{<span style="color: #00cdcd;">:wallpaper</span>
+ {<span style="color: #00cdcd;">:thumbnail-resolution</span>
+  {<span style="color: #00cdcd;">:extension</span> <span style="color: #00cdcd;">"jpeg"</span>,
+   <span style="color: #00cdcd;">:hash</span> <span style="color: #00cdcd;">"f47818e3692786db6737a1b20236ce60"</span>,
+   <span style="color: #00cdcd;">:width</span> 1920,
+   <span style="color: #00cdcd;">:height</span> 1080},
+  <span style="color: #00cdcd;">:imported-at</span> 1366813210080,
+  <span style="color: #00cdcd;">:rating</span> 0,
+  <span style="color: #00cdcd;">:source</span> <span style="color: #00cdcd;">"http://localhost:3000/&#8230;"</span>,
+  <span style="color: #00cdcd;">:title</span> <span style="color: #00cdcd;">"trees artwork - Wallpaper (#2756701) Wallbase"</span>,
+  <span style="color: #00cdcd;">:tags</span> #{<span style="color: #00cdcd;">"16:9"</span> <span style="color: #00cdcd;">"1920x1080"</span>},
+  <span style="color: #00cdcd;">:resolutions</span> #{{<span style="color: #00cdcd;">:extension</span> <span style="color: #00cdcd;">"jpeg"</span>, <span style="color: #00cdcd;">:hash</span> <span style="color: #00cdcd;">"&#8230;"</span>, <span style="color: #00cdcd;">:width</span> 1920, <span style="color: #00cdcd;">:height</span> 1080}}}
+ <span style="color: #00cdcd;">:source-uri</span> #&lt;<span style="color: #ff0000;">File</span> /var/folders/y7/&#8230;}
+</pre>
+
+<ul>
+<li>We have a couple of goals at this point.
+<ol>
+<li>Title should be appropriate for being the name of a file on any file system.
+</li>
+<li>Resolutions and Aspect Ratios should be added as tags automatically
+</li>
+<li>We should have hashes of all the files so storage is shared accross all users
+</li>
+<li>Multiple source uris for the same logical 'wallpaper' should be merged together. Others should be kept separate.
+</li>
+</ol>
+
+</li>
+</ul>
+
+</li>
+<li>We alter the user's library ref, adding in each wallpaper.
+</li>
+<li>We save off the state of the library to the store
+</li>
+<li>We finally download each of the source-uris that made it through the import process into their correlated library-store-ids
+</li>
+<li>Then we thumbnail-ize them
+</li>
+<li>And finally delete any temporary files that were created (at this point only in the case of ZipFiles)
+</li>
+<li>Return the response map.
+
+</li>
+</ol>
+
+</li>
+<li>We support Zip Files, Straight URIS, and now Base64 Strings
+</li>
+<li>Core <code>multimethods</code>
+<ul>
+<li>Requests are handled by <code>multimethods</code> dispatching on the <code>accept-header</code>
+</li>
+<li>URIs are converted to <code>BufferedImage</code>, dispatching on the <code>class</code> of the input
+</li>
+<li>Extensions are retrieved, dispatching on <code>class</code>
+</li>
+</ul>
+
+</li>
+</ul>
+
+
 </div>
+</div>
+
+</div>
+
+<div id="outline-container-5-3" class="outline-3">
+<h3 id="sec-5-3"><span class="section-number-3">5.3</span> A Ring App &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-5-3">
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">def</span> <span style="color: #0000ee;">app</span>
+  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">-&gt;</span> #'routes/main-routes
+      &#8230;
+      wrap-params
+      &#8230;
+      wrap-json-params<span style="color: #8a8a8a;">))</span>
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-5-3-1" class="outline-4">
+<h4 id="sec-5-3-1"><span class="section-number-4">5.3.1</span> Anatomy of a Ring App &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-5-3-1">
+
+
+<ul>
+<li>A Ring app is a function which takes a request in the form of a map and returns a map representing a response.
+</li>
+<li>This allows the use of higher order functions to construct 'middleware' which either transform the request or response on behalf of all inner routes.
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5-4" class="outline-3">
+<h3 id="sec-5-4"><span class="section-number-3">5.4</span> A Compojure Route &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-5-4">
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">POST</span> <span style="color: #00cdcd;">"/wallpaper"</span> [merge title source <span style="color: #ff0000;">sourceUri</span> <span style="color: #00cdcd;">:as</span> r]
+      <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [{{{username <span style="color: #00cdcd;">:value</span>} <span style="color: #00cdcd;">"username"</span>} <span style="color: #00cdcd;">:cookies</span>} r]
+        <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">if</span> username
+          <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">letfn</span> [<span style="color: #8a8a8a;">(</span>rep [s] <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">apply</span> str <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">replace</span> {\ , \+} s<span style="color: #8a8a8a;">)))</span>]
+            <span style="color: #8a8a8a;">(</span>wallpaper-post-route r
+                                  username
+                                  title
+                                  merge
+                                  <span style="color: #8a8a8a;">(</span>rep source<span style="color: #8a8a8a;">)</span>
+                                  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">if</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">vector?</span> <span style="color: #ff0000;">sourceUri</span><span style="color: #8a8a8a;">)</span>
+                                    <span style="color: #8a8a8a;">(</span>mapv rep <span style="color: #ff0000;">sourceUri</span><span style="color: #8a8a8a;">)</span>
+                                    <span style="color: #ff0000;">sourceUri</span><span style="color: #8a8a8a;">)))</span>
+          {<span style="color: #00cdcd;">:status</span> 401}<span style="color: #8a8a8a;">)))</span>
+</pre>
+
+
+
+
+</div>
+
+<div id="outline-container-5-4-1" class="outline-4">
+<h4 id="sec-5-4-1"><span class="section-number-4">5.4.1</span> Anatomy of a Compojure route &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-5-4-1">
+
+
+<ul>
+<li>Compojure is a thin wrapper (started at around 200 SLOC) around consructing Ring handler functions.
+</li>
+<li>It provides a series of Macros which make it easy to declare what kind of request you're handling, the URL you expect to hit, and how you want to destructure the parameters that can come in.
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5-5" class="outline-3">
+<h3 id="sec-5-5"><span class="section-number-3">5.5</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-5-5">
+
+
+<ul>
+<li>Expand the source URIs
+</li>
+<li>Transform source URIs to importable wallpaper
+</li>
+<li>Add importable wallpapers to user lib
+</li>
+<li>Download each to global file-store
+</li>
+<li>Add thumbnails for each to global file-stoer
+</li>
+<li>Delete temporary files
+</li>
+</ul>
+
+
+
+</div>
+
+<div id="outline-container-5-5-1" class="outline-4">
+<h4 id="sec-5-5-1"><span class="section-number-4">5.5.1</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span>&nbsp;<span class="bigcode">bigcode</span></span></h4>
+<div class="outline-text-4" id="text-5-5-1">
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defn</span> <span style="color: #0000ee;">import-wallpaper</span>
+  <span style="color: #8a8a8a;">(</span>[username store-base merge? title source source-uris]
+     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [-&gt;importable-wallpaper <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">partial</span> lib/import-uri-&gt;importable-wallpaper username title source<span style="color: #8a8a8a;">)</span>
+           -&gt;sanitized-title      <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">fn</span> [wallpaper]
+                                    <span style="color: #8a8a8a;">(</span>lib/sanitize-title username <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:title</span> wallpaper<span style="color: #8a8a8a;">)</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:thumbnail-resolution</span> wallpaper<span style="color: #8a8a8a;">)))</span>
+           source-uris            <span style="color: #8a8a8a;">(</span>expand-source-uris source-uris<span style="color: #8a8a8a;">)</span>
+           importable-wallpapers  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">doall</span>
+                                   <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">filter</span> identity <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> -&gt;importable-wallpaper source-uris<span style="color: #8a8a8a;">)))</span>]
+       <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">if</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">not</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">empty?</span> importable-wallpapers<span style="color: #8a8a8a;">))</span>
+         <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [source-uris              <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #00cdcd;">:source-uri</span> importable-wallpapers<span style="color: #8a8a8a;">)</span>
+               wallpapers               <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #00cdcd;">:wallpaper</span> importable-wallpapers<span style="color: #8a8a8a;">)</span>
+               sanitized-titles         <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> -&gt;sanitized-title wallpapers<span style="color: #8a8a8a;">)</span>
+               shortest-sanitized-title <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">first</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">sort-by</span> count sanitized-title<span style="color: #8a8a8a;">))</span>
+               sanitized-title          shortest-sanitized-title
+               unique-titles            <span style="color: #8a8a8a;">(</span>lib/unique-titles username sanitized-title<span style="color: #8a8a8a;">)</span>
+               wallpapers               <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> #<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> %1 <span style="color: #00cdcd;">:title</span> %2<span style="color: #8a8a8a;">)</span> wallpapers unique-titles<span style="color: #8a8a8a;">)</span>
+               wallpapers               <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">if</span> merge? [<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">reduce</span> merge-wallpapers wallpapers<span style="color: #8a8a8a;">)</span>] wallpapers<span style="color: #8a8a8a;">)</span>]
+           <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">partial</span> lib/add-library-wallpaper! username<span style="color: #8a8a8a;">)</span> wallpapers<span style="color: #8a8a8a;">))</span>
+           <span style="color: #8a8a8a;">(</span>store/put <span style="color: #00cdcd;">:file-system</span> store-base <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">str</span> <span style="color: #00cdcd;">"libraries/"</span> username <span style="color: #00cdcd;">".clj"</span><span style="color: #8a8a8a;">)</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">pr-str</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">into</span> #{}  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">deref</span> <span style="color: #8a8a8a;">(</span>lib/new-library username<span style="color: #8a8a8a;">)))))</span>
+           <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [resolutions          <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">comp</span> <span style="color: #00cdcd;">:thumbnail-resolution</span> <span style="color: #00cdcd;">:wallpaper</span><span style="color: #8a8a8a;">)</span> importable-wallpapers<span style="color: #8a8a8a;">)</span>
+                 library-object-ids   <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> #<span style="color: #8a8a8a;">(</span>lib/wallpaper-&gt;library-object-id %1 <span style="color: #00cdcd;">"library"</span> %2<span style="color: #8a8a8a;">)</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #00cdcd;">:wallpaper</span> importable-wallpapers<span style="color: #8a8a8a;">)</span> resolutions<span style="color: #8a8a8a;">)</span>
+                 thumbnail-object-ids <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> #<span style="color: #8a8a8a;">(</span>lib/wallpaper-&gt;thumbnail-object-id %1 <span style="color: #00cdcd;">"thumbnails"</span> %2<span style="color: #8a8a8a;">)</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #00cdcd;">:wallpaper</span> importable-wallpapers<span style="color: #8a8a8a;">)</span> resolutions<span style="color: #8a8a8a;">)</span>]
+             <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span>
+              <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> #<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">with-open</span> [is <span style="color: #8a8a8a;">(</span>io/input-stream %2<span style="color: #8a8a8a;">)</span>] <span style="color: #8a8a8a;">(</span>store/put <span style="color: #00cdcd;">:file-system</span> store-base %1 is<span style="color: #8a8a8a;">))</span> library-object-ids source-uris<span style="color: #8a8a8a;">))</span>
+             <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span>
+              <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">partial</span> store/create-thumbnail <span style="color: #00cdcd;">:file-system</span> store-base<span style="color: #8a8a8a;">)</span> library-object-ids thumbnail-object-ids<span style="color: #8a8a8a;">)))</span>
+           <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span>
+            <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> fs/delete <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">filter</span> fs/exists? <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">filter</span> string? source-uris<span style="color: #8a8a8a;">))))</span>
+           wallpapers<span style="color: #8a8a8a;">)</span>
+         []<span style="color: #8a8a8a;">))))</span>
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-5-5-1-1" class="outline-5">
+<h5 id="sec-5-5-1-1"><span class="section-number-5">5.5.1.1</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h5>
+<div class="outline-text-5" id="text-5-5-1-1">
+
+
+<ul>
+<li>I'm creating functions in 4 different ways here. partial, comp, fn, and #(). Yeah, Clojure's functional alright.
+</li>
+</ul>
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5-5-2" class="outline-4">
+<h4 id="sec-5-5-2"><span class="section-number-4">5.5.2</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-5-2">
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defn</span> <span style="color: #0000ee;">expand-source-uris</span> [source-uris]
+  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">loop</span> [expanded-source-uris       #{}
+         [source-uri &amp; source-uris] <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">filter</span> importable-uri? source-uris<span style="color: #8a8a8a;">)</span>]
+    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">if</span> source-uri
+      <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">cond</span> <span style="color: #8a8a8a;">(</span>zipfile? source-uri<span style="color: #8a8a8a;">)</span>
+            <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">recur</span> expanded-source-uris
+                   <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">into</span> source-uris <span style="color: #8a8a8a;">(</span>zipfile-uri-&gt;temp-files source-uri<span style="color: #8a8a8a;">)))</span>
+
+            <span style="color: #8a8a8a;">(</span>url-exists? source-uri<span style="color: #8a8a8a;">)</span>
+            <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">recur</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">conj</span> expanded-source-uris <span style="color: #8a8a8a;">(</span>source-uri-&gt;temp-file source-uri<span style="color: #8a8a8a;">))</span>
+                   source-uris<span style="color: #8a8a8a;">)</span>
+
+            <span style="color: #00cdcd;">:drop-it</span>
+            <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">recur</span> expanded-source-uris source-uris<span style="color: #8a8a8a;">))</span>
+      expanded-source-uris<span style="color: #8a8a8a;">)))</span>
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-5-3" class="outline-4">
+<h4 id="sec-5-5-3"><span class="section-number-4">5.5.3</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-5-5-3">
+
+
+<ul>
+<li>The loop/recur form is the only tail-call optimized form in Clojure. Useful if you can't get your job done using standard list-comprehensions or fold operations
+</li>
+<li>Clojure supports destructuring binds. Sequences are desructured with vectors, and maps are destructured with maps.
+</li>
+<li>In the case of a zipfile, we want to drop the original uri and replace it with many temporary files.
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-5-4" class="outline-4">
+<h4 id="sec-5-5-4"><span class="section-number-4">5.5.4</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-5-4">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-5-5" class="outline-4">
+<h4 id="sec-5-5-5"><span class="section-number-4">5.5.5</span> Add to the user's library &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-5-5">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-5-6" class="outline-4">
+<h4 id="sec-5-5-6"><span class="section-number-4">5.5.6</span> Download Each source URI &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-5-6">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-5-7" class="outline-4">
+<h4 id="sec-5-5-7"><span class="section-number-4">5.5.7</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-5-7">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-5-8" class="outline-4">
+<h4 id="sec-5-5-8"><span class="section-number-4">5.5.8</span> Delete the Temporary Files &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-5-8">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-5-9" class="outline-4">
+<h4 id="sec-5-5-9"><span class="section-number-4">5.5.9</span> Return the Map &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-5-9">
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5-6" class="outline-3">
+<h3 id="sec-5-6"><span class="section-number-3">5.6</span> Send the Response &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-5-6">
+
+</div>
+
+</div>
+
+<div id="outline-container-5-7" class="outline-3">
+<h3 id="sec-5-7"><span class="section-number-3">5.7</span> Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</h3>
+<div class="outline-text-3" id="text-5-7">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-8" class="outline-3">
+<h3 id="sec-5-8"><span class="section-number-3">5.8</span> Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server</h3>
+<div class="outline-text-3" id="text-5-8">
+
 </div>
 </div>
 
 </div>
 
 <div id="outline-container-6" class="outline-2">
-<h2 id="sec-6"><span class="section-number-2">6</span> Client-Side Concerns</h2>
+<h2 id="sec-6"><span class="section-number-2">6</span> But what about … &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-6">
+
+
+
+
+
+<pre class="src src-js">{
+  <span style="color: #00cdcd;">'title'</span>: <span style="color: #00cdcd;">'foo'</span>,
+  <span style="color: #00cdcd;">'source'</span>: <span style="color: #00cdcd;">'http://localhost/foo/'</span>,
+  <span style="color: #00cdcd;">'sourceUri'</span>: [
+    <span style="color: #00cdcd;">'iVBORw0KGgoAAA&#8230;ggg=='</span>,
+    <span style="color: #00cdcd;">'aBGoAAt0wwgggg&#8230;axx=='</span>
+  ]
+}
+</pre>
 
 
 
 </div>
 
 <div id="outline-container-6-1" class="outline-3">
-<h3 id="sec-6-1"><span class="section-number-3">6.1</span> Base64 encoding</h3>
+<h3 id="sec-6-1"><span class="section-number-3">6.1</span> notes &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h3>
 <div class="outline-text-3" id="text-6-1">
 
 
+<ul>
+<li>Disadvantages
 
-</div>
+<ul>
+<li>Client's with low-bandwidth get hammered.
 
-<div id="outline-container-6-1-1" class="outline-4">
-<h4 id="sec-6-1-1"><span class="section-number-4">6.1.1</span> HTML Canvas, toDataURI</h4>
-<div class="outline-text-4" id="text-6-1-1">
+</li>
+<li>Same Origin Policy!
+</li>
+</ul>
 
-
-</div>
-
-</div>
-
-<div id="outline-container-6-1-2" class="outline-4">
-<h4 id="sec-6-1-2"><span class="section-number-4">6.1.2</span> countdown latch</h4>
-<div class="outline-text-4" id="text-6-1-2">
+</li>
+</ul>
 
 
 </div>
@@ -710,45 +1396,162 @@ wallpaperrrBookmarkletImport.importRequest = <span style="color: #00cd00;">funct
 
 </div>
 
-<div id="outline-container-6-2" class="outline-3">
-<h3 id="sec-6-2"><span class="section-number-3">6.2</span> Cross-Domain Scripts (Same Origin Policy)</h3>
-<div class="outline-text-3" id="text-6-2">
+<div id="outline-container-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> 2 Paths</h2>
+<div class="outline-text-2" id="text-7">
 
 
 
 </div>
 
-<div id="outline-container-6-2-1" class="outline-4">
-<h4 id="sec-6-2-1"><span class="section-number-4">6.2.1</span> iframe communication via message posting</h4>
-<div class="outline-text-4" id="text-6-2-1">
+<div id="outline-container-7-1" class="outline-3">
+<h3 id="sec-7-1"><span class="section-number-3">7.1</span> How to get Same Origin image data to the back end and imported.</h3>
+<div class="outline-text-3" id="text-7-1">
+
+
+
+</div>
+
+<div id="outline-container-7-1-1" class="outline-4">
+<h4 id="sec-7-1-1"><span class="section-number-4">7.1.1</span> Use HTML Canvas to get a datURL.</h4>
+<div class="outline-text-4" id="text-7-1-1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-7-1-2" class="outline-4">
+<h4 id="sec-7-1-2"><span class="section-number-4">7.1.2</span> Send it to wallpaperrr via postMessage and JSON</h4>
+<div class="outline-text-4" id="text-7-1-2">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-7-1-3" class="outline-4">
+<h4 id="sec-7-1-3"><span class="section-number-4">7.1.3</span> Implement an extension and java-image multimethod for (class (byte-array 1))</h4>
+<div class="outline-text-4" id="text-7-1-3">
+
+
+
+</div>
+
+<div id="outline-container-7-1-3-1" class="outline-5">
+<h5 id="sec-7-1-3-1"><span class="section-number-5">7.1.3.1</span> Everything else just works</h5>
+<div class="outline-text-5" id="text-7-1-3-1">
+
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-7-2" class="outline-3">
+<h3 id="sec-7-2"><span class="section-number-3">7.2</span> How to fix importing wallpaper from thefoxisblack.</h3>
+<div class="outline-text-3" id="text-7-2">
+
+
+
+</div>
+
+<div id="outline-container-7-2-1" class="outline-4">
+<h4 id="sec-7-2-1"><span class="section-number-4">7.2.1</span> Set your user-agent in the URLConnection</h4>
+<div class="outline-text-4" id="text-7-2-1">
+
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> Client-Side Concerns</h2>
+<div class="outline-text-2" id="text-8">
+
+
+
+</div>
+
+<div id="outline-container-8-1" class="outline-3">
+<h3 id="sec-8-1"><span class="section-number-3">8.1</span> Base64 encoding</h3>
+<div class="outline-text-3" id="text-8-1">
+
+
+
+</div>
+
+<div id="outline-container-8-1-1" class="outline-4">
+<h4 id="sec-8-1-1"><span class="section-number-4">8.1.1</span> HTML Canvas, toDataURI</h4>
+<div class="outline-text-4" id="text-8-1-1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-8-1-2" class="outline-4">
+<h4 id="sec-8-1-2"><span class="section-number-4">8.1.2</span> countdown latch</h4>
+<div class="outline-text-4" id="text-8-1-2">
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-8-2" class="outline-3">
+<h3 id="sec-8-2"><span class="section-number-3">8.2</span> Cross-Domain Scripts (Same Origin Policy)</h3>
+<div class="outline-text-3" id="text-8-2">
+
+
+
+</div>
+
+<div id="outline-container-8-2-1" class="outline-4">
+<h4 id="sec-8-2-1"><span class="section-number-4">8.2.1</span> iframe communication via message posting</h4>
+<div class="outline-text-4" id="text-8-2-1">
 
 
 <p>
     I effectively implemented a very simple message bus using JSON.
 </p>
-<ul>
-<li id="sec-6-2-1-1">Each window can be the target of a message. If you post messages directly to the window, you don't need to be concerned with doubling up on handlers<br/>
 
-</li>
-</ul>
-<ul>
-<li id="sec-6-2-1-2">You want to know who's talking to whom, so we include the target attribute.<br/>
-
-</li>
-</ul>
-<ul>
-<li id="sec-6-2-1-3">Dispatch tables help us line a particular message up with a function.<br/>
-
-</li>
-</ul>
 </div>
+
+<div id="outline-container-8-2-1-1" class="outline-5">
+<h5 id="sec-8-2-1-1"><span class="section-number-5">8.2.1.1</span> Each window can be the target of a message. If you post messages directly to the window, you don't need to be concerned with doubling up on handlers</h5>
+<div class="outline-text-5" id="text-8-2-1-1">
+
+
 </div>
 
 </div>
 
-<div id="outline-container-6-3" class="outline-3">
-<h3 id="sec-6-3"><span class="section-number-3">6.3</span> I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.</h3>
-<div class="outline-text-3" id="text-6-3">
+<div id="outline-container-8-2-1-2" class="outline-5">
+<h5 id="sec-8-2-1-2"><span class="section-number-5">8.2.1.2</span> You want to know who's talking to whom, so we include the target attribute.</h5>
+<div class="outline-text-5" id="text-8-2-1-2">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-8-2-1-3" class="outline-5">
+<h5 id="sec-8-2-1-3"><span class="section-number-5">8.2.1.3</span> Dispatch tables help us line a particular message up with a function.</h5>
+<div class="outline-text-5" id="text-8-2-1-3">
+
+
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-8-3" class="outline-3">
+<h3 id="sec-8-3"><span class="section-number-3">8.3</span> I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.</h3>
+<div class="outline-text-3" id="text-8-3">
 
 
 <p>
@@ -759,52 +1562,34 @@ wallpaperrrBookmarkletImport.importRequest = <span style="color: #00cd00;">funct
 
 </div>
 
-<div id="outline-container-7" class="outline-2">
-<h2 id="sec-7"><span class="section-number-2">7</span> Server-Side Concerns</h2>
-<div class="outline-text-2" id="text-7">
+<div id="outline-container-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> Server-Side Concerns</h2>
+<div class="outline-text-2" id="text-9">
 
 
 
 </div>
 
-<div id="outline-container-7-1" class="outline-3">
-<h3 id="sec-7-1"><span class="section-number-3">7.1</span> Decoding Base64 data</h3>
-<div class="outline-text-3" id="text-7-1">
+<div id="outline-container-9-1" class="outline-3">
+<h3 id="sec-9-1"><span class="section-number-3">9.1</span> Decoding Base64 data</h3>
+<div class="outline-text-3" id="text-9-1">
 
 
 
 </div>
 
-<div id="outline-container-7-1-1" class="outline-4">
-<h4 id="sec-7-1-1"><span class="section-number-4">7.1.1</span> Java's got that</h4>
-<div class="outline-text-4" id="text-7-1-1">
+<div id="outline-container-9-1-1" class="outline-4">
+<h4 id="sec-9-1-1"><span class="section-number-4">9.1.1</span> Java's got that</h4>
+<div class="outline-text-4" id="text-9-1-1">
 
 
 </div>
 
 </div>
 
-<div id="outline-container-7-1-2" class="outline-4">
-<h4 id="sec-7-1-2"><span class="section-number-4">7.1.2</span> dataURIs are not base64 data</h4>
-<div class="outline-text-4" id="text-7-1-2">
-
-
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-7-2" class="outline-3">
-<h3 id="sec-7-2"><span class="section-number-3">7.2</span> Using Base64 data as an image</h3>
-<div class="outline-text-3" id="text-7-2">
-
-
-
-</div>
-
-<div id="outline-container-7-2-1" class="outline-4">
-<h4 id="sec-7-2-1"><span class="section-number-4">7.2.1</span> clojure multimethods with class as the dispatch function `(class (byte-array 1))`</h4>
-<div class="outline-text-4" id="text-7-2-1">
+<div id="outline-container-9-1-2" class="outline-4">
+<h4 id="sec-9-1-2"><span class="section-number-4">9.1.2</span> dataURIs are not base64 data</h4>
+<div class="outline-text-4" id="text-9-1-2">
 
 
 </div>
@@ -812,17 +1597,35 @@ wallpaperrrBookmarkletImport.importRequest = <span style="color: #00cd00;">funct
 
 </div>
 
-<div id="outline-container-7-3" class="outline-3">
-<h3 id="sec-7-3"><span class="section-number-3">7.3</span> Setting a URLConnection's User-Agent string</h3>
-<div class="outline-text-3" id="text-7-3">
+<div id="outline-container-9-2" class="outline-3">
+<h3 id="sec-9-2"><span class="section-number-3">9.2</span> Using Base64 data as an image</h3>
+<div class="outline-text-3" id="text-9-2">
 
 
 
 </div>
 
-<div id="outline-container-7-3-1" class="outline-4">
-<h4 id="sec-7-3-1"><span class="section-number-4">7.3.1</span> Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</h4>
-<div class="outline-text-4" id="text-7-3-1">
+<div id="outline-container-9-2-1" class="outline-4">
+<h4 id="sec-9-2-1"><span class="section-number-4">9.2.1</span> clojure multimethods with class as the dispatch function `(class (byte-array 1))`</h4>
+<div class="outline-text-4" id="text-9-2-1">
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-9-3" class="outline-3">
+<h3 id="sec-9-3"><span class="section-number-3">9.3</span> Setting a URLConnection's User-Agent string</h3>
+<div class="outline-text-3" id="text-9-3">
+
+
+
+</div>
+
+<div id="outline-container-9-3-1" class="outline-4">
+<h4 id="sec-9-3-1"><span class="section-number-4">9.3.1</span> Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</h4>
+<div class="outline-text-4" id="text-9-3-1">
 
 </div>
 </div>
@@ -830,28 +1633,25 @@ wallpaperrrBookmarkletImport.importRequest = <span style="color: #00cd00;">funct
 
 </div>
 
-<div id="outline-container-8" class="outline-2">
-<h2 id="sec-8"><span class="section-number-2">8</span> Further experiments</h2>
-<div class="outline-text-2" id="text-8">
+<div id="outline-container-10" class="outline-2">
+<h2 id="sec-10"><span class="section-number-2">10</span> Further experiments</h2>
+<div class="outline-text-2" id="text-10">
 
 
 
 </div>
 
-<div id="outline-container-8-1" class="outline-3">
-<h3 id="sec-8-1"><span class="section-number-3">8.1</span> Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe.</h3>
-<div class="outline-text-3" id="text-8-1">
+<div id="outline-container-10-1" class="outline-3">
+<h3 id="sec-10-1"><span class="section-number-3">10.1</span> Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe</h3>
+<div class="outline-text-3" id="text-10-1">
 
 
-<p>
-   #+STYLE: &lt;link rel="stylesheet" type="text/css" href="common.css" /&gt;
-   #+STYLE: &lt;link rel="stylesheet" type="text/css" href="screen.css" media="screen" /&gt;
-   #+STYLE: &lt;link rel="stylesheet" type="text/css" href="projection.css" media="projection" /&gt;
-   #+STYLE: &lt;link rel="stylesheet" type="text/css" href="presenter.css" media="presenter" /&gt;
-</p>
 
 
-   <script type="text/javascript" src="org-html-slideshow.js"></script>
+
+
+
+<script type="text/javascript" src="org-html-slideshow.js"></script>
 
 </div>
 </div>
@@ -859,7 +1659,7 @@ wallpaperrrBookmarkletImport.importRequest = <span style="color: #00cd00;">funct
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-04-22</p>
+<p class="date">Date: 2013-04-24</p>
 <p class="author">Author: Tim Visher</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
