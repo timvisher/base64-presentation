@@ -151,11 +151,13 @@
 </li>
 <li><a href="#sec-5-6-3">5.6.3 source-uris-&gt;importable-wallpaper</a></li>
 <li><a href="#sec-5-6-4">5.6.4 source-uris-&gt;importable-wallpaper</a></li>
-<li><a href="#sec-5-6-5">5.6.5 Add to the user's library</a></li>
-<li><a href="#sec-5-6-6">5.6.6 Download Each source URI</a></li>
-<li><a href="#sec-5-6-7">5.6.7 Thumbnailization</a></li>
-<li><a href="#sec-5-6-8">5.6.8 Delete the Temporary Files</a></li>
-<li><a href="#sec-5-6-9">5.6.9 Return the Map</a></li>
+<li><a href="#sec-5-6-5">5.6.5 source-uris-&gt;importable-wallpaper</a></li>
+<li><a href="#sec-5-6-6">5.6.6 source-uris-&gt;importable-wallpaper</a></li>
+<li><a href="#sec-5-6-7">5.6.7 Add to the user's library</a></li>
+<li><a href="#sec-5-6-8">5.6.8 Download Each source URI</a></li>
+<li><a href="#sec-5-6-9">5.6.9 Thumbnailization</a></li>
+<li><a href="#sec-5-6-10">5.6.10 Delete the Temporary Files</a></li>
+<li><a href="#sec-5-6-11">5.6.11 Return the Map</a></li>
 </ul>
 </li>
 <li><a href="#sec-5-7">5.7 Send the Response</a></li>
@@ -163,7 +165,7 @@
 <li><a href="#sec-5-9">5.9 Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server</a></li>
 </ul>
 </li>
-<li><a href="#sec-6">6 But what about …</a>
+<li><a href="#sec-6">6 But what about Base64?</a>
 <ul>
 <li><a href="#sec-6-1">6.1 notes</a></li>
 </ul>
@@ -1360,8 +1362,27 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-5-6-5" class="outline-4">
-<h4 id="sec-5-6-5"><span class="section-number-4">5.6.5</span> Add to the user's library &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<h4 id="sec-5-6-5"><span class="section-number-4">5.6.5</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
 <div class="outline-text-4" id="text-5-6-5">
+
+
+<ul>
+<li><code>wc/uri-&gt;image</code>
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defmulti</span> <span style="color: #0000ee;">java-image</span> <span style="color: #00cdcd; font-style: italic;">"Attempts to coerce it's argument to a BufferedImage"</span> class<span style="color: #8a8a8a;">)</span>
+
+<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defmethod</span> <span style="color: #0000ee;">java-image</span> <span style="color: #ff0000;">BufferedImage</span> [<span style="color: #ff0000;">^BufferedImage</span> image]
+  <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">GraphicsUtilities/toCompatibleImage</span> image<span style="color: #8a8a8a;">))</span>
+
+<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defmethod</span> <span style="color: #0000ee;">java-image</span> <span style="color: #00cdcd;">:default</span> [input-streamable]
+  <span style="color: #8a8a8a;">(</span>input-streamable-&gt;java-image input-streamable<span style="color: #8a8a8a;">))</span>
+</pre>
+
+</li>
+</ul>
 
 
 </div>
@@ -1369,8 +1390,30 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-5-6-6" class="outline-4">
-<h4 id="sec-5-6-6"><span class="section-number-4">5.6.6</span> Download Each source URI &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<h4 id="sec-5-6-6"><span class="section-number-4">5.6.6</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
 <div class="outline-text-4" id="text-5-6-6">
+
+
+<ul>
+<li><code>wc/uri-&gt;image</code>
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defmulti</span> <span style="color: #0000ee;">extensions</span> <span style="color: #00cdcd; font-style: italic;">"Attempts to get image format extensions for INPUT"</span> class<span style="color: #8a8a8a;">)</span>
+
+<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defmethod</span> <span style="color: #0000ee;">extensions</span> <span style="color: #00cdcd;">:default</span> [file]
+  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">with-open</span> [is <span style="color: #8a8a8a;">(</span>io/input-stream file<span style="color: #8a8a8a;">)</span>]
+    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">-&gt;&gt;</span> <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">ImageIO/createImageInputStream</span> is<span style="color: #8a8a8a;">)</span>
+         <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">ImageIO/getImageReaders</span><span style="color: #8a8a8a;">)</span>
+         <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">iterator-seq</span><span style="color: #8a8a8a;">)</span>
+         <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> #<span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">.getFormatName</span> %<span style="color: #8a8a8a;">))</span>
+         <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> #<span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">.toLowerCase</span> %<span style="color: #8a8a8a;">))</span>
+         <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">into</span> #{}<span style="color: #8a8a8a;">))))</span>
+</pre>
+
+</li>
+</ul>
 
 
 </div>
@@ -1378,8 +1421,19 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-5-6-7" class="outline-4">
-<h4 id="sec-5-6-7"><span class="section-number-4">5.6.7</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<h4 id="sec-5-6-7"><span class="section-number-4">5.6.7</span> Add to the user's library &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
 <div class="outline-text-4" id="text-5-6-7">
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">partial</span> lib/add-library-wallpaper! username<span style="color: #8a8a8a;">)</span> wallpapers<span style="color: #8a8a8a;">))</span>
+<span style="color: #8a8a8a;">(</span>store/put <span style="color: #00cdcd;">:file-system</span>
+           store-base
+           <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">str</span> <span style="color: #00cdcd;">"libraries/"</span> username <span style="color: #00cdcd;">".clj"</span><span style="color: #8a8a8a;">)</span>
+           <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">pr-str</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">into</span> #{}  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">deref</span> <span style="color: #8a8a8a;">(</span>lib/new-library username<span style="color: #8a8a8a;">)))))</span>
+</pre>
 
 
 </div>
@@ -1387,17 +1441,57 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-5-6-8" class="outline-4">
-<h4 id="sec-5-6-8"><span class="section-number-4">5.6.8</span> Delete the Temporary Files &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<h4 id="sec-5-6-8"><span class="section-number-4">5.6.8</span> Download Each source URI &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
 <div class="outline-text-4" id="text-5-6-8">
 
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [-&gt;thumbnail-resolution <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">comp</span> <span style="color: #00cdcd;">:thumbnail-resolution</span> <span style="color: #00cdcd;">:wallpaper</span><span style="color: #8a8a8a;">)</span>
+      resolutions            <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> -&gt;thumbnail-resolution importable-wallpapers<span style="color: #8a8a8a;">)</span>
+      wallpapers             <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #00cdcd;">:wallpaper</span> importable-wallpapers<span style="color: #8a8a8a;">)</span>
+      -&gt;library-object-id    #<span style="color: #8a8a8a;">(</span>lib/wallpaper-&gt;library-object-id %1 <span style="color: #00cdcd;">"library"</span> %2<span style="color: #8a8a8a;">)</span>
+      library-object-ids     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> -&gt;library-object-id wallpapers resolutions<span style="color: #8a8a8a;">)</span>
+      -&gt;thumbnail-object-id  #<span style="color: #8a8a8a;">(</span>lib/wallpaper-&gt;thumbnail-object-id %1 <span style="color: #00cdcd;">"thumbnails"</span> %2<span style="color: #8a8a8a;">)</span>
+      thumbnail-object-ids   <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> -&gt;thumbnail-object-id wallpapers resolutions<span style="color: #8a8a8a;">)</span>]
+  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [download-wallpaper #<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">with-open</span> [is <span style="color: #8a8a8a;">(</span>io/input-stream %2<span style="color: #8a8a8a;">)</span>]
+                              <span style="color: #8a8a8a;">(</span>store/put <span style="color: #00cdcd;">:file-system</span> store-base %1 is<span style="color: #8a8a8a;">))</span>]
+    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span>
+     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> download-wallpaper library-object-ids source-uris<span style="color: #8a8a8a;">)))</span>
+  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [create-thumbnail <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">partial</span> store/create-thumbnail <span style="color: #00cdcd;">:file-system</span> store-base<span style="color: #8a8a8a;">)</span>]
+    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span>
+     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> create-thumbnail library-object-ids thumbnail-object-ids<span style="color: #8a8a8a;">))))</span>
+</pre>
 
 </div>
 
 </div>
 
 <div id="outline-container-5-6-9" class="outline-4">
-<h4 id="sec-5-6-9"><span class="section-number-4">5.6.9</span> Return the Map &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<h4 id="sec-5-6-9"><span class="section-number-4">5.6.9</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
 <div class="outline-text-4" id="text-5-6-9">
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-6-10" class="outline-4">
+<h4 id="sec-5-6-10"><span class="section-number-4">5.6.10</span> Delete the Temporary Files &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-6-10">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-6-11" class="outline-4">
+<h4 id="sec-5-6-11"><span class="section-number-4">5.6.11</span> Return the Map &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-6-11">
 
 </div>
 </div>
@@ -1431,7 +1525,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-6" class="outline-2">
-<h2 id="sec-6"><span class="section-number-2">6</span> But what about … &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
+<h2 id="sec-6"><span class="section-number-2">6</span> But what about Base64? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-6">
 
 

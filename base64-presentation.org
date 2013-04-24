@@ -528,11 +528,74 @@
         wallpaper)))
 #+end_src
 
-*** Add to the user's library                                         :slide:
+*** source-uris->importable-wallpaper                                 :slide:
+
+    - =wc/uri->image=
+
+      #+begin_src clojure
+        (defmulti java-image "Attempts to coerce it's argument to a BufferedImage" class)
+        
+        (defmethod java-image BufferedImage [^BufferedImage image]
+          (GraphicsUtilities/toCompatibleImage image))
+        
+        (defmethod java-image :default [input-streamable]
+          (input-streamable->java-image input-streamable))
+      #+end_src
+
+*** source-uris->importable-wallpaper                                 :slide:
+
+    - =wc/uri->image=
+
+      #+begin_src clojure
+        (defmulti extensions "Attempts to get image format extensions for INPUT" class)
+        
+        (defmethod extensions :default [file]
+          (with-open [is (io/input-stream file)]
+            (->> (ImageIO/createImageInputStream is)
+                 (ImageIO/getImageReaders)
+                 (iterator-seq)
+                 (map #(.getFormatName %))
+                 (map #(.toLowerCase %))
+                 (into #{}))))
+      #+end_src
+
+*** Add
+    --
+
+    Tim Visher
+
+    http://five.sentenc.es/ -- Spend less time on mailto the user's library                                         :slide:
+
+#+begin_src clojure
+  (dorun (map (partial lib/add-library-wallpaper! username) wallpapers))
+  (store/put :file-system
+             store-base
+             (str "libraries/" username ".clj")
+             (pr-str (into #{}  (deref (lib/new-library username)))))
+#+end_src
 
 *** Download Each source URI                                          :slide:
 
+
+#+begin_src clojure
+  (let [->thumbnail-resolution (comp :thumbnail-resolution :wallpaper)
+        resolutions            (map ->thumbnail-resolution importable-wallpapers)
+        wallpapers             (map :wallpaper importable-wallpapers)
+        ->library-object-id    #(lib/wallpaper->library-object-id %1 "library" %2)
+        library-object-ids     (map ->library-object-id wallpapers resolutions)
+        ->thumbnail-object-id  #(lib/wallpaper->thumbnail-object-id %1 "thumbnails" %2)
+        thumbnail-object-ids   (map ->thumbnail-object-id wallpapers resolutions)]
+    (let [download-wallpaper #(with-open [is (io/input-stream %2)]
+                                (store/put :file-system store-base %1 is))]
+      (dorun
+       (map download-wallpaper library-object-ids source-uris)))
+    (let [create-thumbnail (partial store/create-thumbnail :file-system store-base)]
+      (dorun
+       (map create-thumbnail library-object-ids thumbnail-object-ids))))
+#+end_src
 *** Thumbnailization                                                  :slide:
+
+    
 
 *** Delete the Temporary Files                                        :slide:
 
@@ -541,7 +604,7 @@
 ** Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).
 
 ** Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server
-* But what about …                                                    :slide:
+* But what about Base64?                                              :slide:
 
 #+begin_src js
   {
