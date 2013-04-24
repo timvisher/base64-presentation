@@ -337,26 +337,6 @@
       2. The =POST= route multimethod responsible for JSON accept headers takes over, passing the data through to the wallpaper model transaction script namespace
       3. We expand the source uris, turning Zip files into multiple temporary files
       4. We transform the expanded source uris into importable wallpapers
-         #+begin_src clojure
-           {:wallpaper
-            {:thumbnail-resolution
-             {:extension "jpeg",
-              :hash "f47818e3692786db6737a1b20236ce60",
-              :width 1920,
-              :height 1080},
-             :imported-at 1366813210080,
-             :rating 0,
-             :source "http://localhost:3000/…",
-             :title "trees artwork - Wallpaper (#2756701) Wallbase",
-             :tags #{"16:9" "1920x1080"},
-             :resolutions #{{:extension "jpeg", :hash "…", :width 1920, :height 1080}}}
-            :source-uri #<File /var/folders/y7/…}
-         #+end_src
-         - We have a couple of goals at this point.
-           1. Title should be appropriate for being the name of a file on any file system.
-           2. Resolutions and Aspect Ratios should be added as tags automatically
-           3. We should have hashes of all the files so storage is shared accross all users
-           4. Multiple source uris for the same logical 'wallpaper' should be merged together. Others should be kept separate.
       5. We alter the user's library ref, adding in each wallpaper.
       6. We save off the state of the library to the store
       7. We finally download each of the source-uris that made it through the import process into their correlated library-store-ids
@@ -369,6 +349,30 @@
       - Requests are handled by =multimethods= dispatching on the =accept-header=
       - URIs are converted to =BufferedImage=, dispatching on the =class= of the input
       - Extensions are retrieved, dispatching on =class=
+
+** The Back End Process                                               :slide:
+
+   #+begin_src clojure
+     ;;; ["http://localhost:3000/user/tim.visher/…allbase_1920x1080.jpeg"] =>
+     {:wallpaper {:thumbnail-resolution {:extension "jpeg",
+                                         :hash "f47818e3692786db6737a1b20236ce60",
+                                         :width 1920,
+                                         :height 1080},
+                  :imported-at 1366813210080,
+                  :rating 0,
+                  :source "http://localhost:3000/…",
+                  :title "trees artwork - Wallpaper (#2756701) Wallbase",
+                  :tags #{"16:9" "1920x1080"},
+                  :resolutions #{{:extension "jpeg", :hash "…", :width 1920, :height 1080}}}
+      :source-uri #<File /var/folders/y7/…}
+   #+end_src
+
+*** An importable wallpaper                                           :notes:
+
+    1. Title should be appropriate for being the name of a file on any file system.
+    2. Resolutions and Aspect Ratios should be added as tags automatically
+    3. We should have hashes of all the files so storage is shared accross all users
+    4. Multiple source uris for the same logical 'wallpaper' should be merged together. Others should be kept separate.
 
 ** A Ring App                                                         :slide:
 
@@ -457,6 +461,10 @@
 **** The Transaction Script                                           :notes:
 
      - I'm creating functions in 4 different ways here. partial, comp, fn, and #(). Yeah, Clojure's functional alright.
+       - many are anonymous, 2 are named in the let.
+     - This is a comman pattern for clojure code. Make a let that names each step of your algorithm so you can reference it later.
+     - Notice dorun/doall. This is because Clojure is lazily evaluated and when you get back to the front-end you won't be able to iterate over the lazyseq.
+       
 *** Expanding the source URIs                                         :slide:
 
     #+begin_src clojure
@@ -477,13 +485,48 @@
             expanded-source-uris)))
     #+end_src
 
-*** Expanding the source URIs                                         :notes:
+**** Expanding the source URIs                                        :notes:
 
-    - The loop/recur form is the only tail-call optimized form in Clojure. Useful if you can't get your job done using standard list-comprehensions or fold operations
-    - Clojure supports destructuring binds. Sequences are desructured with vectors, and maps are destructured with maps.
-    - In the case of a zipfile, we want to drop the original uri and replace it with many temporary files.
+     - The loop/recur form is the only tail-call optimized form in Clojure. Useful if you can't get your job done using standard list-comprehensions or fold operations
+     - Clojure supports destructuring binds. Sequences are desructured with vectors, and maps are destructured with maps.
+     - In the case of a zipfile, we want to drop the original uri and replace it with many temporary files.
 
 *** source-uris->importable-wallpaper                                 :slide:
+    
+#+begin_src clojure
+  (defn import-uri->importable-wallpaper
+    ([username title source source-uri]
+       (if-let [wallpaper (import-uri->wallpaper username title source source-uri)]
+         {:wallpaper wallpaper :source-uri source-uri}))
+    ([username source-uri]
+       (let [title (store/base-name (.getPath (java.net.URI. source-uri)))]
+         (import-uri->importable-wallpaper username
+                                           title
+                                           source-uri
+                                           source-uri))))
+#+end_src
+
+*** source-uris->importable-wallpaper                         :slide:mediumcode:
+    
+#+begin_src clojure
+  (defn import-uri->wallpaper [username title source source-uri]
+    (if-let [image (wc/uri->image source-uri)]
+      (let [wallpaper {:resolutions #{(assoc (:resolution image) :extension (:extension image))}}
+            wallpaper (assoc wallpaper :tags #{(wc/resolution->string (first (:resolutions wallpaper)))})
+            wallpaper (assoc wallpaper :tags (->> (:resolutions wallpaper)
+                                                  (first ,,,)
+                                                  (wc/resolution->aspect-ratio ,,,)
+                                                  (wc/aspect-ratio->string ,,,)
+                                                  (conj (:tags wallpaper) ,,,)
+                                                  (into #{} ,,,)))
+            wallpaper (assoc wallpaper :title (sanitize-title username title (first (:resolutions wallpaper))))
+            wallpaper (assoc wallpaper :source (try (.toString (java.net.URI. source))
+                                                    (catch java.net.MalformedURLException e)))
+            wallpaper (assoc wallpaper :rating 0)
+            wallpaper (assoc wallpaper :imported-at (time-coerce/to-long (time/now)))
+            wallpaper (assoc wallpaper :thumbnail-resolution (first (:resolutions wallpaper)))]
+        wallpaper)))
+#+end_src
 
 *** Add to the user's library                                         :slide:
 

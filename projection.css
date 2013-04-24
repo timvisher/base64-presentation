@@ -15,6 +15,10 @@ img {
    zoom: 50%;
 }
 
+.mediumcode pre {
+   zoom: 80%;
+}
+
 @media all and (min-width:400px) {
    html {
       zoom: 25%;

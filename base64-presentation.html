@@ -122,36 +122,45 @@
 <li><a href="#sec-5-2-1">5.2.1 The Back End Process</a></li>
 </ul>
 </li>
-<li><a href="#sec-5-3">5.3 A Ring App</a>
+<li><a href="#sec-5-3">5.3 The Back End Process</a>
 <ul>
-<li><a href="#sec-5-3-1">5.3.1 Anatomy of a Ring App</a></li>
+<li><a href="#sec-5-3-1">5.3.1 An importable wallpaper</a></li>
 </ul>
 </li>
-<li><a href="#sec-5-4">5.4 A Compojure Route</a>
+<li><a href="#sec-5-4">5.4 A Ring App</a>
 <ul>
-<li><a href="#sec-5-4-1">5.4.1 Anatomy of a Compojure route</a></li>
+<li><a href="#sec-5-4-1">5.4.1 Anatomy of a Ring App</a></li>
 </ul>
 </li>
-<li><a href="#sec-5-5">5.5 The Transaction Script</a>
+<li><a href="#sec-5-5">5.5 A Compojure Route</a>
 <ul>
-<li><a href="#sec-5-5-1">5.5.1 The Transaction Script</a>
-<ul>
-<li><a href="#sec-5-5-1-1">5.5.1.1 The Transaction Script</a></li>
+<li><a href="#sec-5-5-1">5.5.1 Anatomy of a Compojure route</a></li>
 </ul>
 </li>
-<li><a href="#sec-5-5-2">5.5.2 Expanding the source URIs</a></li>
-<li><a href="#sec-5-5-3">5.5.3 Expanding the source URIs</a></li>
-<li><a href="#sec-5-5-4">5.5.4 source-uris-&gt;importable-wallpaper</a></li>
-<li><a href="#sec-5-5-5">5.5.5 Add to the user's library</a></li>
-<li><a href="#sec-5-5-6">5.5.6 Download Each source URI</a></li>
-<li><a href="#sec-5-5-7">5.5.7 Thumbnailization</a></li>
-<li><a href="#sec-5-5-8">5.5.8 Delete the Temporary Files</a></li>
-<li><a href="#sec-5-5-9">5.5.9 Return the Map</a></li>
+<li><a href="#sec-5-6">5.6 The Transaction Script</a>
+<ul>
+<li><a href="#sec-5-6-1">5.6.1 The Transaction Script</a>
+<ul>
+<li><a href="#sec-5-6-1-1">5.6.1.1 The Transaction Script</a></li>
 </ul>
 </li>
-<li><a href="#sec-5-6">5.6 Send the Response</a></li>
-<li><a href="#sec-5-7">5.7 Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</a></li>
-<li><a href="#sec-5-8">5.8 Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server</a></li>
+<li><a href="#sec-5-6-2">5.6.2 Expanding the source URIs</a>
+<ul>
+<li><a href="#sec-5-6-2-1">5.6.2.1 Expanding the source URIs</a></li>
+</ul>
+</li>
+<li><a href="#sec-5-6-3">5.6.3 source-uris-&gt;importable-wallpaper</a></li>
+<li><a href="#sec-5-6-4">5.6.4 source-uris-&gt;importable-wallpaper</a></li>
+<li><a href="#sec-5-6-5">5.6.5 Add to the user's library</a></li>
+<li><a href="#sec-5-6-6">5.6.6 Download Each source URI</a></li>
+<li><a href="#sec-5-6-7">5.6.7 Thumbnailization</a></li>
+<li><a href="#sec-5-6-8">5.6.8 Delete the Temporary Files</a></li>
+<li><a href="#sec-5-6-9">5.6.9 Return the Map</a></li>
+</ul>
+</li>
+<li><a href="#sec-5-7">5.7 Send the Response</a></li>
+<li><a href="#sec-5-8">5.8 Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</a></li>
+<li><a href="#sec-5-9">5.9 Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server</a></li>
 </ul>
 </li>
 <li><a href="#sec-6">6 But what about …</a>
@@ -981,40 +990,6 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 <li>We expand the source uris, turning Zip files into multiple temporary files
 </li>
 <li>We transform the expanded source uris into importable wallpapers
-
-
-
-<pre class="src src-clojure">{<span style="color: #00cdcd;">:wallpaper</span>
- {<span style="color: #00cdcd;">:thumbnail-resolution</span>
-  {<span style="color: #00cdcd;">:extension</span> <span style="color: #00cdcd;">"jpeg"</span>,
-   <span style="color: #00cdcd;">:hash</span> <span style="color: #00cdcd;">"f47818e3692786db6737a1b20236ce60"</span>,
-   <span style="color: #00cdcd;">:width</span> 1920,
-   <span style="color: #00cdcd;">:height</span> 1080},
-  <span style="color: #00cdcd;">:imported-at</span> 1366813210080,
-  <span style="color: #00cdcd;">:rating</span> 0,
-  <span style="color: #00cdcd;">:source</span> <span style="color: #00cdcd;">"http://localhost:3000/&#8230;"</span>,
-  <span style="color: #00cdcd;">:title</span> <span style="color: #00cdcd;">"trees artwork - Wallpaper (#2756701) Wallbase"</span>,
-  <span style="color: #00cdcd;">:tags</span> #{<span style="color: #00cdcd;">"16:9"</span> <span style="color: #00cdcd;">"1920x1080"</span>},
-  <span style="color: #00cdcd;">:resolutions</span> #{{<span style="color: #00cdcd;">:extension</span> <span style="color: #00cdcd;">"jpeg"</span>, <span style="color: #00cdcd;">:hash</span> <span style="color: #00cdcd;">"&#8230;"</span>, <span style="color: #00cdcd;">:width</span> 1920, <span style="color: #00cdcd;">:height</span> 1080}}}
- <span style="color: #00cdcd;">:source-uri</span> #&lt;<span style="color: #ff0000;">File</span> /var/folders/y7/&#8230;}
-</pre>
-
-<ul>
-<li>We have a couple of goals at this point.
-<ol>
-<li>Title should be appropriate for being the name of a file on any file system.
-</li>
-<li>Resolutions and Aspect Ratios should be added as tags automatically
-</li>
-<li>We should have hashes of all the files so storage is shared accross all users
-</li>
-<li>Multiple source uris for the same logical 'wallpaper' should be merged together. Others should be kept separate.
-</li>
-</ol>
-
-</li>
-</ul>
-
 </li>
 <li>We alter the user's library ref, adding in each wallpaper.
 </li>
@@ -1054,8 +1029,56 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-5-3" class="outline-3">
-<h3 id="sec-5-3"><span class="section-number-3">5.3</span> A Ring App &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<h3 id="sec-5-3"><span class="section-number-3">5.3</span> The Back End Process &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-5-3">
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #5c5cff; font-weight: bold;">;;; </span><span style="color: #5c5cff; font-style: italic;">["http://localhost:3000/user/tim.visher/&#8230;allbase_1920x1080.jpeg"] =&gt;</span>
+{<span style="color: #00cdcd;">:wallpaper</span> {<span style="color: #00cdcd;">:thumbnail-resolution</span> {<span style="color: #00cdcd;">:extension</span> <span style="color: #00cdcd;">"jpeg"</span>,
+                                    <span style="color: #00cdcd;">:hash</span> <span style="color: #00cdcd;">"f47818e3692786db6737a1b20236ce60"</span>,
+                                    <span style="color: #00cdcd;">:width</span> 1920,
+                                    <span style="color: #00cdcd;">:height</span> 1080},
+             <span style="color: #00cdcd;">:imported-at</span> 1366813210080,
+             <span style="color: #00cdcd;">:rating</span> 0,
+             <span style="color: #00cdcd;">:source</span> <span style="color: #00cdcd;">"http://localhost:3000/&#8230;"</span>,
+             <span style="color: #00cdcd;">:title</span> <span style="color: #00cdcd;">"trees artwork - Wallpaper (#2756701) Wallbase"</span>,
+             <span style="color: #00cdcd;">:tags</span> #{<span style="color: #00cdcd;">"16:9"</span> <span style="color: #00cdcd;">"1920x1080"</span>},
+             <span style="color: #00cdcd;">:resolutions</span> #{{<span style="color: #00cdcd;">:extension</span> <span style="color: #00cdcd;">"jpeg"</span>, <span style="color: #00cdcd;">:hash</span> <span style="color: #00cdcd;">"&#8230;"</span>, <span style="color: #00cdcd;">:width</span> 1920, <span style="color: #00cdcd;">:height</span> 1080}}}
+ <span style="color: #00cdcd;">:source-uri</span> #&lt;<span style="color: #ff0000;">File</span> /var/folders/y7/&#8230;}
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-5-3-1" class="outline-4">
+<h4 id="sec-5-3-1"><span class="section-number-4">5.3.1</span> An importable wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-5-3-1">
+
+
+<ol>
+<li>Title should be appropriate for being the name of a file on any file system.
+</li>
+<li>Resolutions and Aspect Ratios should be added as tags automatically
+</li>
+<li>We should have hashes of all the files so storage is shared accross all users
+</li>
+<li>Multiple source uris for the same logical 'wallpaper' should be merged together. Others should be kept separate.
+</li>
+</ol>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5-4" class="outline-3">
+<h3 id="sec-5-4"><span class="section-number-3">5.4</span> A Ring App &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-5-4">
 
 
 
@@ -1073,9 +1096,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-5-3-1" class="outline-4">
-<h4 id="sec-5-3-1"><span class="section-number-4">5.3.1</span> Anatomy of a Ring App &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
-<div class="outline-text-4" id="text-5-3-1">
+<div id="outline-container-5-4-1" class="outline-4">
+<h4 id="sec-5-4-1"><span class="section-number-4">5.4.1</span> Anatomy of a Ring App &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-5-4-1">
 
 
 <ul>
@@ -1091,9 +1114,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-5-4" class="outline-3">
-<h3 id="sec-5-4"><span class="section-number-3">5.4</span> A Compojure Route &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-5-4">
+<div id="outline-container-5-5" class="outline-3">
+<h3 id="sec-5-5"><span class="section-number-3">5.5</span> A Compojure Route &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-5-5">
 
 
 
@@ -1119,9 +1142,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-5-4-1" class="outline-4">
-<h4 id="sec-5-4-1"><span class="section-number-4">5.4.1</span> Anatomy of a Compojure route &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
-<div class="outline-text-4" id="text-5-4-1">
+<div id="outline-container-5-5-1" class="outline-4">
+<h4 id="sec-5-5-1"><span class="section-number-4">5.5.1</span> Anatomy of a Compojure route &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-5-5-1">
 
 
 <ul>
@@ -1137,9 +1160,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-5-5" class="outline-3">
-<h3 id="sec-5-5"><span class="section-number-3">5.5</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-5-5">
+<div id="outline-container-5-6" class="outline-3">
+<h3 id="sec-5-6"><span class="section-number-3">5.6</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-5-6">
 
 
 <ul>
@@ -1161,9 +1184,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-5-5-1" class="outline-4">
-<h4 id="sec-5-5-1"><span class="section-number-4">5.5.1</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span>&nbsp;<span class="bigcode">bigcode</span></span></h4>
-<div class="outline-text-4" id="text-5-5-1">
+<div id="outline-container-5-6-1" class="outline-4">
+<h4 id="sec-5-6-1"><span class="section-number-4">5.6.1</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span>&nbsp;<span class="bigcode">bigcode</span></span></h4>
+<div class="outline-text-4" id="text-5-6-1">
 
 
 
@@ -1205,24 +1228,34 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-5-5-1-1" class="outline-5">
-<h5 id="sec-5-5-1-1"><span class="section-number-5">5.5.1.1</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h5>
-<div class="outline-text-5" id="text-5-5-1-1">
+<div id="outline-container-5-6-1-1" class="outline-5">
+<h5 id="sec-5-6-1-1"><span class="section-number-5">5.6.1.1</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h5>
+<div class="outline-text-5" id="text-5-6-1-1">
 
 
 <ul>
 <li>I'm creating functions in 4 different ways here. partial, comp, fn, and #(). Yeah, Clojure's functional alright.
+<ul>
+<li>many are anonymous, 2 are named in the let.
 </li>
 </ul>
 
+</li>
+<li>This is a comman pattern for clojure code. Make a let that names each step of your algorithm so you can reference it later.
+</li>
+<li>Notice dorun/doall. This is because Clojure is lazily evaluated and when you get back to the front-end you won't be able to iterate over the lazyseq.
+</li>
+</ul>
+
+
 </div>
 </div>
 
 </div>
 
-<div id="outline-container-5-5-2" class="outline-4">
-<h4 id="sec-5-5-2"><span class="section-number-4">5.5.2</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-5-5-2">
+<div id="outline-container-5-6-2" class="outline-4">
+<h4 id="sec-5-6-2"><span class="section-number-4">5.6.2</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-6-2">
 
 
 
@@ -1246,13 +1279,12 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </pre>
 
 
-</div>
 
 </div>
 
-<div id="outline-container-5-5-3" class="outline-4">
-<h4 id="sec-5-5-3"><span class="section-number-4">5.5.3</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
-<div class="outline-text-4" id="text-5-5-3">
+<div id="outline-container-5-6-2-1" class="outline-5">
+<h5 id="sec-5-6-2-1"><span class="section-number-5">5.6.2.1</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h5>
+<div class="outline-text-5" id="text-5-6-2-1">
 
 
 <ul>
@@ -1266,83 +1298,132 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 
 </div>
-
-</div>
-
-<div id="outline-container-5-5-4" class="outline-4">
-<h4 id="sec-5-5-4"><span class="section-number-4">5.5.4</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-5-5-4">
-
-
 </div>
 
 </div>
 
-<div id="outline-container-5-5-5" class="outline-4">
-<h4 id="sec-5-5-5"><span class="section-number-4">5.5.5</span> Add to the user's library &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-5-5-5">
+<div id="outline-container-5-6-3" class="outline-4">
+<h4 id="sec-5-6-3"><span class="section-number-4">5.6.3</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-6-3">
 
 
-</div>
-
-</div>
-
-<div id="outline-container-5-5-6" class="outline-4">
-<h4 id="sec-5-5-6"><span class="section-number-4">5.5.6</span> Download Each source URI &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-5-5-6">
 
 
-</div>
 
-</div>
-
-<div id="outline-container-5-5-7" class="outline-4">
-<h4 id="sec-5-5-7"><span class="section-number-4">5.5.7</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-5-5-7">
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defn</span> <span style="color: #0000ee;">import-uri-&gt;importable-wallpaper</span>
+  <span style="color: #8a8a8a;">(</span>[username title source source-uri]
+     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">if-let</span> [wallpaper <span style="color: #8a8a8a;">(</span>import-uri-&gt;wallpaper username title source source-uri<span style="color: #8a8a8a;">)</span>]
+       {<span style="color: #00cdcd;">:wallpaper</span> wallpaper <span style="color: #00cdcd;">:source-uri</span> source-uri}<span style="color: #8a8a8a;">))</span>
+  <span style="color: #8a8a8a;">(</span>[username source-uri]
+     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [title <span style="color: #8a8a8a;">(</span>store/base-name <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">.getPath</span> <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">java.net.URI.</span> source-uri<span style="color: #8a8a8a;">)))</span>]
+       <span style="color: #8a8a8a;">(</span>import-uri-&gt;importable-wallpaper username
+                                         title
+                                         source-uri
+                                         source-uri<span style="color: #8a8a8a;">))))</span>
+</pre>
 
 
 </div>
 
 </div>
 
-<div id="outline-container-5-5-8" class="outline-4">
-<h4 id="sec-5-5-8"><span class="section-number-4">5.5.8</span> Delete the Temporary Files &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-5-5-8">
+<div id="outline-container-5-6-4" class="outline-4">
+<h4 id="sec-5-6-4"><span class="section-number-4">5.6.4</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span>&nbsp;<span class="mediumcode">mediumcode</span></span></h4>
+<div class="outline-text-4" id="text-5-6-4">
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defn</span> <span style="color: #0000ee;">import-uri-&gt;wallpaper</span> [username title source source-uri]
+  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">if-let</span> [image <span style="color: #8a8a8a;">(</span>wc/uri-&gt;image source-uri<span style="color: #8a8a8a;">)</span>]
+    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [wallpaper {<span style="color: #00cdcd;">:resolutions</span> #{<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:resolution</span> image<span style="color: #8a8a8a;">)</span> <span style="color: #00cdcd;">:extension</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:extension</span> image<span style="color: #8a8a8a;">))</span>}}
+          wallpaper <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> wallpaper <span style="color: #00cdcd;">:tags</span> #{<span style="color: #8a8a8a;">(</span>wc/resolution-&gt;string <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">first</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:resolutions</span> wallpaper<span style="color: #8a8a8a;">)))</span>}<span style="color: #8a8a8a;">)</span>
+          wallpaper <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> wallpaper <span style="color: #00cdcd;">:tags</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">-&gt;&gt;</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:resolutions</span> wallpaper<span style="color: #8a8a8a;">)</span>
+                                                <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">first</span> ,,,<span style="color: #8a8a8a;">)</span>
+                                                <span style="color: #8a8a8a;">(</span>wc/resolution-&gt;aspect-ratio ,,,<span style="color: #8a8a8a;">)</span>
+                                                <span style="color: #8a8a8a;">(</span>wc/aspect-ratio-&gt;string ,,,<span style="color: #8a8a8a;">)</span>
+                                                <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">conj</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:tags</span> wallpaper<span style="color: #8a8a8a;">)</span> ,,,<span style="color: #8a8a8a;">)</span>
+                                                <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">into</span> #{} ,,,<span style="color: #8a8a8a;">)))</span>
+          wallpaper <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> wallpaper <span style="color: #00cdcd;">:title</span> <span style="color: #8a8a8a;">(</span>sanitize-title username title <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">first</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:resolutions</span> wallpaper<span style="color: #8a8a8a;">))))</span>
+          wallpaper <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> wallpaper <span style="color: #00cdcd;">:source</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">try</span> <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">.toString</span> <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">java.net.URI.</span> source<span style="color: #8a8a8a;">))</span>
+                                                  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">catch</span> <span style="color: #ff0000;">java.net.MalformedURLException</span> e<span style="color: #8a8a8a;">)))</span>
+          wallpaper <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> wallpaper <span style="color: #00cdcd;">:rating</span> 0<span style="color: #8a8a8a;">)</span>
+          wallpaper <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> wallpaper <span style="color: #00cdcd;">:imported-at</span> <span style="color: #8a8a8a;">(</span>time-coerce/to-long <span style="color: #8a8a8a;">(</span>time/now<span style="color: #8a8a8a;">)))</span>
+          wallpaper <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> wallpaper <span style="color: #00cdcd;">:thumbnail-resolution</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">first</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:resolutions</span> wallpaper<span style="color: #8a8a8a;">)))</span>]
+      wallpaper<span style="color: #8a8a8a;">)))</span>
+</pre>
 
 
 </div>
 
 </div>
 
-<div id="outline-container-5-5-9" class="outline-4">
-<h4 id="sec-5-5-9"><span class="section-number-4">5.5.9</span> Return the Map &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-5-5-9">
+<div id="outline-container-5-6-5" class="outline-4">
+<h4 id="sec-5-6-5"><span class="section-number-4">5.6.5</span> Add to the user's library &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-6-5">
+
 
 </div>
+
+</div>
+
+<div id="outline-container-5-6-6" class="outline-4">
+<h4 id="sec-5-6-6"><span class="section-number-4">5.6.6</span> Download Each source URI &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-6-6">
+
+
 </div>
 
 </div>
 
-<div id="outline-container-5-6" class="outline-3">
-<h3 id="sec-5-6"><span class="section-number-3">5.6</span> Send the Response &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-5-6">
+<div id="outline-container-5-6-7" class="outline-4">
+<h4 id="sec-5-6-7"><span class="section-number-4">5.6.7</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-6-7">
 
+
+</div>
+
+</div>
+
+<div id="outline-container-5-6-8" class="outline-4">
+<h4 id="sec-5-6-8"><span class="section-number-4">5.6.8</span> Delete the Temporary Files &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-6-8">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-6-9" class="outline-4">
+<h4 id="sec-5-6-9"><span class="section-number-4">5.6.9</span> Return the Map &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-5-6-9">
+
+</div>
 </div>
 
 </div>
 
 <div id="outline-container-5-7" class="outline-3">
-<h3 id="sec-5-7"><span class="section-number-3">5.7</span> Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</h3>
+<h3 id="sec-5-7"><span class="section-number-3">5.7</span> Send the Response &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-5-7">
-
 
 </div>
 
 </div>
 
 <div id="outline-container-5-8" class="outline-3">
-<h3 id="sec-5-8"><span class="section-number-3">5.8</span> Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server</h3>
+<h3 id="sec-5-8"><span class="section-number-3">5.8</span> Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</h3>
 <div class="outline-text-3" id="text-5-8">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-9" class="outline-3">
+<h3 id="sec-5-9"><span class="section-number-3">5.9</span> Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server</h3>
+<div class="outline-text-3" id="text-5-9">
 
 </div>
 </div>
