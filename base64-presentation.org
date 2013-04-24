@@ -559,12 +559,7 @@
                  (into #{}))))
       #+end_src
 
-*** Add
-    --
-
-    Tim Visher
-
-    http://five.sentenc.es/ -- Spend less time on mailto the user's library                                         :slide:
+*** Add to the user's library                                         :slide:
 
 #+begin_src clojure
   (dorun (map (partial lib/add-library-wallpaper! username) wallpapers))
