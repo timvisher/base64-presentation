@@ -3,7 +3,7 @@
 #+AUTHOR: Tim Visher
 #+Babel: :results silent
 
-* Hello Christopher, I'm Tim                                          :slide:
+* Hello Monetate, I'm Tim                                             :slide:
 
   [[file:images/avatar.jpg]]
 
@@ -804,12 +804,13 @@
 * Further experiments                                                 :slide:
   - Browser Extensions
 
-* In Conclusion
+* In Conclusion                                                       :slide:
   - Facepalm!
   - Base64 Is Easy to Get
   - Base64 Is Easy to Process
   - User-Agent Sniffing Bad!
-* Thanks! Questions?
+
+* Thanks! Questions?                                                  :slide:
 
   - [[http://blog.wallpaperrr.cc][blog.wallpaperrr.cc]]
   - [[https://twitter.com/wallpaperrr][@wallpaperrr]]
