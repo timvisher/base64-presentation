@@ -22,7 +22,7 @@
 * Wallpaperrr                                                         :slide:
 
   #+BEGIN_QUOTE
-  A community of currators passionate about their wallpaper.
+  A community of curators passionate about their wallpaper.
   #+END_QUOTE
 
   [[file:images/wallpaperrr.png]]
@@ -52,7 +52,7 @@
 
      - 403s on the back end while the front-end worked just fine.
 
-     - Nothing obvious but there were a number of suspcious cookies and they had just done a redesign. I suspected lock out.
+     - Nothing obvious but there were a number of suspicious cookies and they had just done a redesign. I suspected lock out.
 
    - A Failed Experiment
 
@@ -127,7 +127,7 @@
 
 #+begin_src js
   var d=document,
-      z=d.createElement('scr'+'ipt'),
+      z=d.createElement('src'+'ipt'),
       b=d.body;
 
   if(!b) {
@@ -137,7 +137,7 @@
   b.appendChild(z);
 
 #+end_src
-
+   
 *** our bootstraperr
 
     - responsible for scraping the site
@@ -182,7 +182,7 @@
 
     - If I were using underscore, this'd be a lot easier. Que Sera, Sera.
     - Remember to use =hasOwnProperty= if you're iterating over an object's properties.
-    - Passing a string to =match= works nicely and allows us to use regexs.
+    - Passing a string to =match= works nicely and allows us to use regexps.
 
 ** The Scraper                                                        :slide:
 
@@ -199,7 +199,7 @@
 
    - Anyone can assoc into them, potentially opening up extensions without code redeployment.
 
-   - This particular structure is nice because I can use regexs
+   - This particular structure is nice because I can use regexps
 
 ** The Scraper                                                        :slide:
 
@@ -328,7 +328,7 @@
        - Risk getting black-listed if you become popular
        - Can be bad for the receiving server to be hit twice for the same image (wallbase.cc)
 
-** =postMessage= (sans Base64)                                        :slide:
+** =POST= Import Data (sans Base64)                                   :slide:
 
 #+begin_src js
   wallpaperrrBookmarkletImport.imgsLoaded = function (importData) {
@@ -405,7 +405,7 @@
 
     1. Title should be appropriate for being the name of a file on any file system.
     2. Resolutions and Aspect Ratios should be added as tags automatically
-    3. We should have hashes of all the files so storage is shared accross all users
+    3. We should have hashes of all the files so storage is shared across all users
     4. Multiple source uris for the same logical 'wallpaper' should be merged together. Others should be kept separate.
 
 ** A Ring App                                                         :slide:
@@ -445,7 +445,7 @@
 
 *** Anatomy of a Compojure route                                      :notes:
 
-    - Compojure is a thin wrapper (started at around 200 SLOC) around consructing Ring handler functions.
+    - Compojure is a thin wrapper (started at around 200 SLOC) around constructing Ring handler functions.
     - It provides a series of Macros which make it easy to declare what kind of request you're handling, the URL you expect to hit, and how you want to destructure the parameters that can come in.
 
 ** The Transaction Script                                     :slide:bigcode:
@@ -494,7 +494,7 @@
         - Delete temporary files
      - I'm creating functions in 4 different ways here. partial, comp, fn, and #(). Yeah, Clojure's functional alright.
        - many are anonymous, 2 are named in the let.
-     - This is a comman pattern for clojure code. Make a let that names each step of your algorithm so you can reference it later.
+     - This is a common pattern for clojure code. Make a let that names each step of your algorithm so you can reference it later.
      - Notice dorun/doall. This is because Clojure is lazily evaluated and when you get back to the front-end you won't be able to iterate over the lazyseq.
 
 *** Expanding the source URIs                                         :slide:
@@ -520,7 +520,7 @@
 **** Expanding the source URIs                                        :notes:
 
      - The loop/recur form is the only tail-call optimized form in Clojure. Useful if you can't get your job done using standard list-comprehensions or fold operations
-     - Clojure supports destructuring binds. Sequences are desructured with vectors, and maps are destructured with maps.
+     - Clojure supports destructuring binds. Sequences are destructured with vectors, and maps are destructured with maps.
      - In the case of a zipfile, we want to drop the original uri and replace it with many temporary files.
 
 *** source-uris->importable-wallpaper                                 :slide:
@@ -706,7 +706,7 @@
 *** How to get Same Origin image data to the back end and imported.
 
     - Use HTML Canvas to get a datURL.
-    - Send it to wallpaperrr via postMessage and JSON
+    - Send it to Wallpaperrr via postMessage and JSON
     - Implement an extension and java-image multimethod for (class (byte-array 1))
     - Everything else Just Works™
 
