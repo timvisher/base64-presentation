@@ -3,21 +3,64 @@
 #+AUTHOR: Tim Visher
 #+Babel: :results silent
 
-* What is Wallpaperrr?                                                :slide:
+* Hello Christopher, I'm Tim                                          :slide:
 
-  - Relay Network
+  [[file:images/avatar.jpg]]
 
-  - I have a problem
+* Relay Network                                                       :slide:
 
-  - [[http://wallpaperrr.cc][Wallpaperrrr]]
+  [[file:images/rly201.png]]
 
-*** slide notes                                                       :notes:
+* I Have a Passion …                                                  :slide:
 
-    - Hello, I'm Tim Visher from Relay Network and I'd like to talk about the challenges of client-side encoding cross-origin image data and importing it to the server using javascript and clojure.
+  [[file:images/wallpaperrr-icon.png]]
 
-    - What is Wallpaperrr? Wallpaperrr is a service intended to make it dead simple to import images to and manage your desktop wallpaper collection across multiple devices with differing screen resolutions and storage capacities. It aims to make it as easy as instapaper or evernote to save a wallpaper you've found on the Internet to your wallpaper collection and to control how that wallpaper appears on your devices.
+* … and a Problem                                                     :slide:
 
-    - I was recently faced with the challenge of importing wallpaper images from thefoxisblack where I believed they had begun to require that certain cookies be set in order to allow their content to be downloaded. This destroyed my ability to send the urls back to the server and have the server download them on my users behalf (me). I've been thinking for a long time about how much of a dick move it is to hit the server twice (especially on a site like wallbase), once on the client and once on the server, in order to download a wallpaper. I'd much rather take the data the client already has and simply stream it, from the client, back to wallpaperrr. This seemed like the perfect opportunity to experiment with that approach, since it would seemingly be the only way I could get the data from thefoxisblack back to my server. What ensued was a lot of learning, and ultimately both a failure and a success.
+  [[file:images/the-problem.png]]
+
+* Wallpaperrr                                                         :slide:
+
+  #+BEGIN_QUOTE
+  A community of currators passionate about their wallpaper.
+  #+END_QUOTE
+
+  [[file:images/wallpaperrr.png]]
+  
+*** What is Wallpaperrr?                                              :notes:
+      - A service intended to make it dead simple to import images to a library. Think Instapaper or Evernote.
+      - A manager for your wallpaper collection across all devices with differing screen resolutions and storage capacities.
+      - A suite of apps that allow you to deftly control how and where your wallpaper will appear.
+      - A community of people sharing their passion for ascetics together.
+
+* Context                                                             :slide:
+
+  - Import Strategy
+  - [[http://www.thefoxisblack.com/category/the-desktop-wallpaper-project/][The Fox Is Black]]
+  - A Failed Experiment Which Taught Me Something Anyway 
+
+** slide notes                                                        :notes:
+
+   - Import Strategy
+     - Always bothers me just a little that I'm hitting the server directly from mine.
+     - The client already has the data (at least on Wallbase). Why not distribute the load?
+     - Till now, 'ain't broke'
+
+   - The Fox Is Black
+
+     - Imports stopped working.
+
+     - 403s on the back end while the front-end worked just fine.
+
+     - Nothing obvious but there were a number of suspcious cookies and they had just done a redesign. I suspected lock out.
+
+   - A Failed Experiment
+
+     - Client-Side Image Downloading (Base64)
+
+     - Don't Be Evil (especially to Wallbase)
+
+     - Let's run an experiment!
 
 * =POST= an Image to the server                                       :slide:
 
@@ -68,24 +111,21 @@
 
 * Obtaining the JSON                                                  :slide:
 
-  - A bookmarklet
-  - A scraper
-  - An =iframe=
-  - [[http://www.whatwg.org/specs/web-apps/current-work/multipage/web-messaging.html#web-messaging][=postMessage=]]
+  file:images/front-end-process.png
 
-*** The Process                                                       :notes:
+** The Process                                                        :notes:
 
-    - The Process
-      - Insert a script from Wallpaperrr into source site
-      - Scrape site for a title, source, and sourceUri(s)
-      - =onload= of the iframe, post =gimme-data= message to =window.parent=
-      - on =gimme-data= message, post =import-data= message back to =event.source=
-        - Actually, there's a fork here. We can either gather up the sourceURIs directly and do nothing else, or we can grab canvas data.
-      - on =import-data= message, =POST= =import-data= JSON back to server
-    - Things to remember
-      - Cross-domain script communication is verbotten.
-      - Scripts from one frame on one domain can't access another's frame's DOM
-      - You're stuck with messaging
+   - The Process
+     - Insert a script from Wallpaperrr into source site
+     - Scrape site for a title, source, and sourceUri(s)
+     - =onload= of the iframe, post =gimme-data= message to =window.parent=
+     - on =gimme-data= message, post =import-data= message back to =event.source=
+       - Actually, there's a fork here. We can either gather up the sourceURIs directly and do nothing else, or we can grab canvas data.
+     - on =import-data= message, =POST= =import-data= JSON back to server
+   - Things to remember
+     - Cross-domain script communication is verbotten.
+     - Scripts from one frame on one domain can't access another's frame's DOM
+     - You're stuck with messaging
 
 ** The bookmarklet                                                    :slide:
 
@@ -312,7 +352,7 @@
 
   - A Compojure =POST= Route
   - Some Ring =middleware=
-  - Some Clojure =multimethods= 
+  - Some Clojure =multimethods=
   - javax.imageio.ImageIO
   - org.jdesktop.swingx.graphics.GraphicsUtilities
 
@@ -328,7 +368,7 @@
 
 ** The Back End Process                                               :slide:
 
-   [[file:images/the_process.png]]
+   [[file:images/the-process.png]]
 
 *** The Back End Process                                              :notes:
 
@@ -664,11 +704,12 @@
 
       - Same Origin Policy!
 
-** 2 Paths                                                            :slide:
+** The Punchline                                                      :slide:
 
-   - The Punchline
-   - Same Origin Data
-   - Cross-Domain Data
+   - Same Origin Data Good
+   - Cross-Domain Data Bad
+
+     [[file:images/good-bad.jpg]]
 
 *** How to get Same Origin image data to the back end and imported.
 
@@ -679,7 +720,7 @@
 
 ** Client-Side Concerns
 
-*** Base64 encoding
+*** Base64 encoding                                                   :slide:
 
     #+begin_src javascript
       wallpaperrrBookmarkletImport.importData = function (importData) {
@@ -688,22 +729,19 @@
       };
     #+end_src
 
-*** Base64 encoding
+*** Base64 encoding                                                   :slide:
 
     #+begin_src javascript
       wallpaperrrBookmarkletImport.importDataToBase64 = function (importData) {
         var countdownLatch, i;
-      
         countdownLatch = {};
         for (i = 0; i < importData.sourceUri.length; i += 1) {
           countdownLatch[importData.sourceUri[i]] = true;
-      
           self.loadImageFile(
             importData.sourceUri[i],
             function (base64String) {
               imageUrls.push(base64String);
               delete countdownLatch[importData.sourceUri[i]];
-      
               if (0 === Object.keys(countdownLatch).length) {
                 importData.sourceUri = imageUrls;
                 self.imgsLoaded(importData);
@@ -713,7 +751,7 @@
       };
     #+end_src
 
-*** Base64 encoding
+*** Base64 encoding                                                   :slide:
 
     #+begin_src javascript
       wallpaperrrBookmarkletImport.loadImageFile = function (sURL, fCallback) {
@@ -727,8 +765,11 @@
           fCallback.call(this, self.dataUriToRawBase64(self.canvas.toDataURL()));
         };
       };
-      
     #+end_src
+
+**** notes                                                            :notes:
+
+     - dataURIs are not base64 data
 
 *** I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.
 
@@ -736,15 +777,34 @@
 
 ** Server-Side Concerns
 
-*** Decoding Base64 data
+*** Decoding Base64 data                                              :slide:
 
-**** Java's got that
+    #+begin_src clojure
+      (defn expand-source-uris [source-uris]
+        (loop [expanded-source-uris       #{}
+               [source-uri & source-uris] (filter importable-uri? source-uris)]
+          (if source-uri
+            (cond …
 
-**** dataURIs are not base64 data
+                  …
 
-*** Using Base64 data as an image
+                  (str->base64-byte-array source-uri)
+                  (recur (conj expanded-source-uris
+                               (str->base64-byte-array source-uri)
+                               ) source-uris)
 
-**** clojure multimethods with class as the dispatch function `(class (byte-array 1))`
+                  …)
+            expanded-source-uris)))
+    #+end_src
+
+*** Decoding Base64 data                                              :slide:
+
+    #+begin_src clojure
+            (defn str->base64-byte-array [str]
+              (try (javax.xml.bind.DatatypeConverter/parseBase64Binary str)
+                   (catch Exception e
+                     (comment "NB: safe to ignore. Means base64 decoding failed."))))
+    #+end_src
 
 *** Setting a URLConnection's User-Agent string
 

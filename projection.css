@@ -19,6 +19,12 @@ img {
    zoom: 80%;
 }
 
+blockquote {
+   text-align: center;
+   font-size: 1.5em;
+   font-style: italic;
+}
+
 @media all and (min-width:400px) {
    html {
       zoom: 25%;
