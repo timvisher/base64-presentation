@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="title" content="The Perils of Cross-Domain, Base64-Encoded, Clojure-Enabled Image Importing"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-04-24"/>
+<meta name="generated" content="2013-04-25"/>
 <meta name="author" content="Tim Visher"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -76,32 +76,28 @@
 </li>
 <li><a href="#sec-9-3">9.3 The Scraper</a>
 <ul>
-<li><a href="#sec-9-3-1">9.3.1 The anatomy of a scraper</a></li>
+<li><a href="#sec-9-3-1">9.3.1 Calling the scraper</a></li>
 </ul>
 </li>
 <li><a href="#sec-9-4">9.4 The Scraper</a>
 <ul>
-<li><a href="#sec-9-4-1">9.4.1 The dispatch table</a></li>
+<li><a href="#sec-9-4-1">9.4.1 Selecting a scraper</a></li>
 </ul>
 </li>
 <li><a href="#sec-9-5">9.5 The Scraper</a>
 <ul>
-<li><a href="#sec-9-5-1">9.5.1 Selecting a scraper</a></li>
+<li><a href="#sec-9-5-1">9.5.1 The dispatch table</a></li>
 </ul>
 </li>
 <li><a href="#sec-9-6">9.6 The Scraper</a>
 <ul>
-<li><a href="#sec-9-6-1">9.6.1 Calling the scraper</a></li>
+<li><a href="#sec-9-6-1">9.6.1 The anatomy of a scraper</a></li>
 </ul>
 </li>
-<li><a href="#sec-9-7">9.7 The <code>iframe</code></a>
+<li><a href="#sec-9-7">9.7 Set Up Message Handlers</a></li>
+<li><a href="#sec-9-8">9.8 Insert the <code>iframe</code></a>
 <ul>
-<li><a href="#sec-9-7-1">9.7.1 Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it.</a></li>
-</ul>
-</li>
-<li><a href="#sec-9-8">9.8 <code>postMessage</code> to site</a>
-<ul>
-<li><a href="#sec-9-8-1">9.8.1 :notes:</a></li>
+<li><a href="#sec-9-8-1">9.8.1 Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it.</a></li>
 </ul>
 </li>
 <li><a href="#sec-9-9">9.9 <code>postMessage</code> to site</a></li>
@@ -144,25 +140,25 @@
 </li>
 <li><a href="#sec-10-6">10.6 The Transaction Script</a>
 <ul>
-<li><a href="#sec-10-6-1">10.6.1 The Transaction Script</a>
+<li>
 <ul>
-<li><a href="#sec-10-6-1-1">10.6.1.1 The Transaction Script</a></li>
+<li><a href="#sec-10-6-1">10.6.1 The Transaction Script</a></li>
 </ul>
 </li>
-<li><a href="#sec-10-6-2">10.6.2 Expanding the source URIs</a>
+<li><a href="#sec-10-6-1">10.6.1 Expanding the source URIs</a>
 <ul>
-<li><a href="#sec-10-6-2-1">10.6.2.1 Expanding the source URIs</a></li>
+<li><a href="#sec-10-6-1-1">10.6.1.1 Expanding the source URIs</a></li>
 </ul>
 </li>
+<li><a href="#sec-10-6-2">10.6.2 source-uris-&gt;importable-wallpaper</a></li>
 <li><a href="#sec-10-6-3">10.6.3 source-uris-&gt;importable-wallpaper</a></li>
 <li><a href="#sec-10-6-4">10.6.4 source-uris-&gt;importable-wallpaper</a></li>
 <li><a href="#sec-10-6-5">10.6.5 source-uris-&gt;importable-wallpaper</a></li>
-<li><a href="#sec-10-6-6">10.6.6 source-uris-&gt;importable-wallpaper</a></li>
-<li><a href="#sec-10-6-7">10.6.7 Add to the user's library</a></li>
-<li><a href="#sec-10-6-8">10.6.8 Download Each source URI</a></li>
+<li><a href="#sec-10-6-6">10.6.6 Add to the user's library</a></li>
+<li><a href="#sec-10-6-7">10.6.7 Download Each source URI</a></li>
+<li><a href="#sec-10-6-8">10.6.8 Thumbnailization</a></li>
 <li><a href="#sec-10-6-9">10.6.9 Thumbnailization</a></li>
-<li><a href="#sec-10-6-10">10.6.10 Thumbnailization</a></li>
-<li><a href="#sec-10-6-11">10.6.11 Delete the Temporary Files</a></li>
+<li><a href="#sec-10-6-10">10.6.10 Delete the Temporary Files</a></li>
 </ul>
 </li>
 <li><a href="#sec-10-7">10.7 Send the Response</a></li>
@@ -199,11 +195,10 @@
 </ul></li>
 </ul>
 </li>
-<li><a href="#sec-12">12 Further experiments</a>
-<ul>
-<li><a href="#sec-12-1">12.1 Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe</a></li>
-</ul>
-</li>
+<li><a href="#sec-12">12 Further experiments</a></li>
+<li><a href="#sec-13">13 In Conclusion</a></li>
+<li><a href="#sec-14">14 Thanks! Questions?</a></li>
+<li><a href="#sec-15">15 </a></li>
 </ul>
 </div>
 </div>
@@ -511,17 +506,6 @@
 </ul>
 
 </li>
-<li>Things to remember
-<ul>
-<li>Cross-domain script communication is verbotten.
-</li>
-<li>Scripts from one frame on one domain can't access another's frame's DOM
-</li>
-<li>You're stuck with messaging
-</li>
-</ul>
-
-</li>
 </ul>
 
 
@@ -530,7 +514,7 @@
 </div>
 
 <div id="outline-container-9-2" class="outline-3">
-<h3 id="sec-9-2"><span class="section-number-3">9.2</span> The bookmarklet &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<h3 id="sec-9-2"><span class="section-number-3">9.2</span> The bookmarklet</h3>
 <div class="outline-text-3" id="text-9-2">
 
 
@@ -554,7 +538,7 @@ b.appendChild(z);
 </div>
 
 <div id="outline-container-9-2-1" class="outline-4">
-<h4 id="sec-9-2-1"><span class="section-number-4">9.2.1</span> our bootstraperr &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<h4 id="sec-9-2-1"><span class="section-number-4">9.2.1</span> our bootstraperr</h4>
 <div class="outline-text-4" id="text-9-2-1">
 
 
@@ -584,18 +568,12 @@ b.appendChild(z);
 
 
 
-<pre class="src src-js">wallpaperrrScraper.thefoxisblackScraper = <span style="color: #00cd00;">function</span> () {
-  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">aNodes</span>, <span style="color: #0000ee;">imageUrls</span>, <span style="color: #0000ee;">i</span>;
-  wallpaperrrScraper.title =
-    document.querySelector(<span style="color: #00cdcd;">'.post h2 a'</span>).textContent;
-  aNodes = document.querySelectorAll(<span style="color: #00cdcd;">'#wallpaper a'</span>);
-  imageUrls = [];
-  <span style="color: #00cd00;">for</span> (i = 0; i &lt; aNodes.length; i += 1) {
-    imageUrls.push(aNodes[i].href);
-  }
-  wallpaperrrScraper.sourceUri = imageUrls;
-  wallpaperrrScraper.merge = <span style="color: #00cdcd;">true</span>;
-  wallpaperrrScraper.insertIFrame();
+<pre class="src src-js">wallpaperrrScraper.scrapeSite = <span style="color: #00cd00;">function</span> () {
+  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">siteScraper</span>;
+
+  siteScraper = wallpaperrrScraper.matchingScraper();
+
+  <span style="color: #00cd00;">return</span> siteScraper ? siteScraper() : wallpaperrrScraper.defaultScraper();
 };
 </pre>
 
@@ -604,21 +582,14 @@ b.appendChild(z);
 </div>
 
 <div id="outline-container-9-3-1" class="outline-4">
-<h4 id="sec-9-3-1"><span class="section-number-4">9.3.1</span> The anatomy of a scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<h4 id="sec-9-3-1"><span class="section-number-4">9.3.1</span> Calling the scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
 <div class="outline-text-4" id="text-9-3-1">
 
 
 <ul>
-<li>I need 3 things: title, source, and the uris.
-
+<li>We provide a default scraper.
 </li>
-<li>Title is used as the title of the wallpaper in your library as well as the name of the wallpaper file on downloading it.
-
-</li>
-<li>Source is used to to link back to the source if others want to import that wallpaper.
-
-</li>
-<li>Source URIs are used to download the actual wallpapers. Alternatively to the source URIs, I could have a series of base64 strings.
+<li>A saner language would let me get a key out of a map with a default.
 </li>
 </ul>
 
@@ -631,46 +602,6 @@ b.appendChild(z);
 <div id="outline-container-9-4" class="outline-3">
 <h3 id="sec-9-4"><span class="section-number-3">9.4</span> The Scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-9-4">
-
-
-
-
-
-<pre class="src src-js">wallpaperrrScraper.scraperDispatch = {
-  <span style="color: #00cdcd;">"thefoxisblack.com"</span>: wallpaperrrScraper.thefoxisblackScraper,
-  <span style="color: #00cdcd;">"10.0.0.*"</span>:          wallpaperrrScraper.localhostScraper,
-};
-</pre>
-
-
-
-</div>
-
-<div id="outline-container-9-4-1" class="outline-4">
-<h4 id="sec-9-4-1"><span class="section-number-4">9.4.1</span> The dispatch table &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
-<div class="outline-text-4" id="text-9-4-1">
-
-
-<ul>
-<li>Dispatch tables are nice! I picked them up from Relay.
-
-</li>
-<li>Anyone can assoc into them, potentially opening up extensions without code redeployment.
-
-</li>
-<li>This particular stricture is nice because I can use regexs
-</li>
-</ul>
-
-
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-9-5" class="outline-3">
-<h3 id="sec-9-5"><span class="section-number-3">9.5</span> The Scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-9-5">
 
 
 
@@ -694,9 +625,9 @@ wallpaperrrScraper.matchingScraper = <span style="color: #00cd00;">function</spa
 
 </div>
 
-<div id="outline-container-9-5-1" class="outline-4">
-<h4 id="sec-9-5-1"><span class="section-number-4">9.5.1</span> Selecting a scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
-<div class="outline-text-4" id="text-9-5-1">
+<div id="outline-container-9-4-1" class="outline-4">
+<h4 id="sec-9-4-1"><span class="section-number-4">9.4.1</span> Selecting a scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-9-4-1">
 
 
 <ul>
@@ -714,6 +645,46 @@ wallpaperrrScraper.matchingScraper = <span style="color: #00cd00;">function</spa
 
 </div>
 
+<div id="outline-container-9-5" class="outline-3">
+<h3 id="sec-9-5"><span class="section-number-3">9.5</span> The Scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-9-5">
+
+
+
+
+
+<pre class="src src-js">wallpaperrrScraper.scraperDispatch = {
+  <span style="color: #00cdcd;">"thefoxisblack.com"</span>: wallpaperrrScraper.thefoxisblackScraper,
+  <span style="color: #00cdcd;">"10.0.0.*"</span>:          wallpaperrrScraper.localhostScraper,
+};
+</pre>
+
+
+
+</div>
+
+<div id="outline-container-9-5-1" class="outline-4">
+<h4 id="sec-9-5-1"><span class="section-number-4">9.5.1</span> The dispatch table &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-9-5-1">
+
+
+<ul>
+<li>Dispatch tables are nice! I picked them up from Relay.
+
+</li>
+<li>Anyone can assoc into them, potentially opening up extensions without code redeployment.
+
+</li>
+<li>This particular structure is nice because I can use regexs
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
 <div id="outline-container-9-6" class="outline-3">
 <h3 id="sec-9-6"><span class="section-number-3">9.6</span> The Scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-9-6">
@@ -722,12 +693,18 @@ wallpaperrrScraper.matchingScraper = <span style="color: #00cd00;">function</spa
 
 
 
-<pre class="src src-js">wallpaperrrScraper.scrapeSite = <span style="color: #00cd00;">function</span> () {
-  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">siteScraper</span>;
-
-  siteScraper = wallpaperrrScraper.matchingScraper();
-
-  <span style="color: #00cd00;">return</span> siteScraper ? siteScraper() : wallpaperrrScraper.defaultScraper();
+<pre class="src src-js">wallpaperrrScraper.thefoxisblackScraper = <span style="color: #00cd00;">function</span> () {
+  <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">aNodes</span>, <span style="color: #0000ee;">imageUrls</span>, <span style="color: #0000ee;">i</span>;
+  wallpaperrrScraper.title =
+    document.querySelector(<span style="color: #00cdcd;">'.post h2 a'</span>).textContent;
+  aNodes = document.querySelectorAll(<span style="color: #00cdcd;">'#wallpaper a'</span>);
+  imageUrls = [];
+  <span style="color: #00cd00;">for</span> (i = 0; i &lt; aNodes.length; i += 1) {
+    imageUrls.push(aNodes[i].href);
+  }
+  wallpaperrrScraper.sourceUri = imageUrls;
+  wallpaperrrScraper.merge = <span style="color: #00cdcd;">true</span>;
+  wallpaperrrScraper.insertIFrame();
 };
 </pre>
 
@@ -736,14 +713,21 @@ wallpaperrrScraper.matchingScraper = <span style="color: #00cd00;">function</spa
 </div>
 
 <div id="outline-container-9-6-1" class="outline-4">
-<h4 id="sec-9-6-1"><span class="section-number-4">9.6.1</span> Calling the scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<h4 id="sec-9-6-1"><span class="section-number-4">9.6.1</span> The anatomy of a scraper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
 <div class="outline-text-4" id="text-9-6-1">
 
 
 <ul>
-<li>We provide a default scraper.
+<li>I need 3 things: title, source, and the uris.
+
 </li>
-<li>A saner language would let me get a key out of a map with a default.
+<li>Title is used as the title of the wallpaper in your library as well as the name of the wallpaper file on downloading it.
+
+</li>
+<li>Source is used to to link back to the source if others want to import that wallpaper.
+
+</li>
+<li>Source URIs are used to download the actual wallpapers. Alternatively to the source URIs, I could have a series of base64 strings.
 </li>
 </ul>
 
@@ -754,20 +738,37 @@ wallpaperrrScraper.matchingScraper = <span style="color: #00cd00;">function</spa
 </div>
 
 <div id="outline-container-9-7" class="outline-3">
-<h3 id="sec-9-7"><span class="section-number-3">9.7</span> The <code>iframe</code></h3>
+<h3 id="sec-9-7"><span class="section-number-3">9.7</span> Set Up Message Handlers &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-9-7">
 
 
 
 
 
-<pre class="src src-js"><span style="color: #5c5cff; font-weight: bold;">// </span><span style="color: #5c5cff; font-style: italic;">import.js</span>
-wallpaperrrScraper.insertIFrame = <span style="color: #00cd00;">function</span> () {
+<pre class="src src-js">wallpaperrrScraper.messageHandlers = {
+  <span style="color: #00cdcd;">'gimme-import-data'</span>: wallpaperrrScraper.postImportDataMessage
+};
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-9-8" class="outline-3">
+<h3 id="sec-9-8"><span class="section-number-3">9.8</span> Insert the <code>iframe</code> &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-9-8">
+
+
+
+
+
+<pre class="src src-js">wallpaperrrScraper.insertIFrame = <span style="color: #00cd00;">function</span> () {
   <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">i</span>, <span style="color: #0000ee;">isrc</span>;
   i =  document.createElement(<span style="color: #00cdcd;">'iframe'</span>);
   i.setAttribute(<span style="color: #00cdcd;">'id'</span>, <span style="color: #00cdcd;">'addFrame'</span>);
   i.setAttribute(<span style="color: #00cdcd;">'src'</span>, <span style="color: #00cdcd;">'http://localhost:3000/bookmarklet-import'</span>);
-  i.setAttribute(<span style="color: #00cdcd;">'style'</span>, <span style="color: #00cdcd;">'position: fixed; top: 10px; left: 10px; height: 200px; width: 200px; border: 5px solid #333; z-index: 12345;'</span>);
+  i.setAttribute(<span style="color: #00cdcd;">'style'</span>, <span style="color: #00cdcd;">'position: fixed; &#8230;'</span>);
   document.body.appendChild(i);
   i.focus();
 };
@@ -777,9 +778,9 @@ wallpaperrrScraper.insertIFrame = <span style="color: #00cd00;">function</span> 
 
 </div>
 
-<div id="outline-container-9-7-1" class="outline-4">
-<h4 id="sec-9-7-1"><span class="section-number-4">9.7.1</span> Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it. &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
-<div class="outline-text-4" id="text-9-7-1">
+<div id="outline-container-9-8-1" class="outline-4">
+<h4 id="sec-9-8-1"><span class="section-number-4">9.8.1</span> Insert an iframe responsible for delivering that data to Wallpaperrr and then allowing the user to rate and tag it. &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
+<div class="outline-text-4" id="text-9-8-1">
 
 
 <ul>
@@ -795,9 +796,9 @@ wallpaperrrScraper.insertIFrame = <span style="color: #00cd00;">function</span> 
 
 </div>
 
-<div id="outline-container-9-8" class="outline-3">
-<h3 id="sec-9-8"><span class="section-number-3">9.8</span> <code>postMessage</code> to site &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-9-8">
+<div id="outline-container-9-9" class="outline-3">
+<h3 id="sec-9-9"><span class="section-number-3">9.9</span> <code>postMessage</code> to site &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-9-9">
 
 
 
@@ -817,32 +818,6 @@ wallpaperrrScraper.insertIFrame = <span style="color: #00cd00;">function</span> 
 </pre>
 
 
-
-</div>
-
-<div id="outline-container-9-8-1" class="outline-4">
-<h4 id="sec-9-8-1"><span class="section-number-4">9.8.1</span> &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h4>
-<div class="outline-text-4" id="text-9-8-1">
-
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-9-9" class="outline-3">
-<h3 id="sec-9-9"><span class="section-number-3">9.9</span> <code>postMessage</code> to site &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
-<div class="outline-text-3" id="text-9-9">
-
-
-
-
-
-<pre class="src src-js"><span style="color: #00cd00;">var</span> <span style="color: #0000ee;">messageHandlers</span> = {
-  <span style="color: #00cdcd;">'gimme-import-data'</span>: postImportDataMessage
-};
-</pre>
-
-
 </div>
 
 </div>
@@ -855,7 +830,7 @@ wallpaperrrScraper.insertIFrame = <span style="color: #00cd00;">function</span> 
 
 
 
-<pre class="src src-js"><span style="color: #00cd00;">function</span> <span style="color: #0000ee;">handleMessage</span>(<span style="color: #0000ee;">e</span>) {
+<pre class="src src-js">wallpaperrrScraper.handleMessage = <span style="color: #00cd00;">function</span> (<span style="color: #0000ee;">e</span>) {
   <span style="color: #00cd00;">if</span> (<span style="color: #00cdcd;">'wallpaperSite'</span> !== e.data.target) {
     <span style="color: #00cd00;">return</span> <span style="color: #00cdcd;">false</span>;
   }
@@ -881,13 +856,13 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 
 
-<pre class="src src-js"><span style="color: #00cd00;">var</span> <span style="color: #0000ee;">postImportDataMessage</span> = <span style="color: #00cd00;">function</span> (<span style="color: #0000ee;">e</span>) {
+<pre class="src src-js">wallpaperrrScraper.postImportDataMessage = <span style="color: #00cd00;">function</span> (<span style="color: #0000ee;">e</span>) {
   <span style="color: #00cd00;">var</span> <span style="color: #0000ee;">payload</span>;
   payload = {
-    <span style="color: #00cdcd;">'title'</span>: Wallpaperrr.Scraper.title,
-    <span style="color: #00cdcd;">'sourceUri'</span>: Wallpaperrr.Scraper.sourceUri,
-    <span style="color: #00cdcd;">'source'</span>: Wallpaperrr.Scraper.source,
-    <span style="color: #00cdcd;">'merge'</span>: Wallpaperrr.Scraper.merge
+    <span style="color: #00cdcd;">'title'</span>: self.title,
+    <span style="color: #00cdcd;">'sourceUri'</span>: self.sourceUri,
+    <span style="color: #00cdcd;">'source'</span>: self.source,
+    <span style="color: #00cdcd;">'merge'</span>: self.merge
   };
   e.source.postMessage(payload, <span style="color: #00cdcd;">'*'</span>);
 };
@@ -1243,32 +1218,8 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-10-6" class="outline-3">
-<h3 id="sec-10-6"><span class="section-number-3">10.6</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<h3 id="sec-10-6"><span class="section-number-3">10.6</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span>&nbsp;<span class="bigcode">bigcode</span></span></h3>
 <div class="outline-text-3" id="text-10-6">
-
-
-<ul>
-<li>Expand the source URIs
-</li>
-<li>Transform source URIs to importable wallpaper
-</li>
-<li>Add importable wallpapers to user lib
-</li>
-<li>Download each to global file-store
-</li>
-<li>Add thumbnails for each to global file-stoer
-</li>
-<li>Delete temporary files
-</li>
-</ul>
-
-
-
-</div>
-
-<div id="outline-container-10-6-1" class="outline-4">
-<h4 id="sec-10-6-1"><span class="section-number-4">10.6.1</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span>&nbsp;<span class="bigcode">bigcode</span></span></h4>
-<div class="outline-text-4" id="text-10-6-1">
 
 
 
@@ -1310,12 +1261,29 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-1-1" class="outline-5">
-<h5 id="sec-10-6-1-1"><span class="section-number-5">10.6.1.1</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h5>
-<div class="outline-text-5" id="text-10-6-1-1">
+<div id="outline-container-10-6-1" class="outline-5">
+<h5 id="sec-10-6-1"><span class="section-number-5">10.6.1</span> The Transaction Script &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h5>
+<div class="outline-text-5" id="text-10-6-1">
 
 
 <ul>
+<li>An Overview
+<ul>
+<li>Expand the source URIs
+</li>
+<li>Transform source URIs to importable wallpaper
+</li>
+<li>Add importable wallpapers to user lib
+</li>
+<li>Download each to global file-store
+</li>
+<li>Add thumbnails for each to global file-store
+</li>
+<li>Delete temporary files
+</li>
+</ul>
+
+</li>
 <li>I'm creating functions in 4 different ways here. partial, comp, fn, and #(). Yeah, Clojure's functional alright.
 <ul>
 <li>many are anonymous, 2 are named in the let.
@@ -1331,13 +1299,12 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 
 </div>
-</div>
 
 </div>
 
-<div id="outline-container-10-6-2" class="outline-4">
-<h4 id="sec-10-6-2"><span class="section-number-4">10.6.2</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-10-6-2">
+<div id="outline-container-10-6-1" class="outline-4">
+<h4 id="sec-10-6-1"><span class="section-number-4">10.6.1</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-10-6-1">
 
 
 
@@ -1364,9 +1331,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-2-1" class="outline-5">
-<h5 id="sec-10-6-2-1"><span class="section-number-5">10.6.2.1</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h5>
-<div class="outline-text-5" id="text-10-6-2-1">
+<div id="outline-container-10-6-1-1" class="outline-5">
+<h5 id="sec-10-6-1-1"><span class="section-number-5">10.6.1.1</span> Expanding the source URIs &nbsp;&nbsp;&nbsp;<span class="tag"><span class="notes">notes</span></span></h5>
+<div class="outline-text-5" id="text-10-6-1-1">
 
 
 <ul>
@@ -1384,9 +1351,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-3" class="outline-4">
-<h4 id="sec-10-6-3"><span class="section-number-4">10.6.3</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-10-6-3">
+<div id="outline-container-10-6-2" class="outline-4">
+<h4 id="sec-10-6-2"><span class="section-number-4">10.6.2</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-10-6-2">
 
 
 
@@ -1409,9 +1376,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-4" class="outline-4">
-<h4 id="sec-10-6-4"><span class="section-number-4">10.6.4</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span>&nbsp;<span class="mediumcode">mediumcode</span></span></h4>
-<div class="outline-text-4" id="text-10-6-4">
+<div id="outline-container-10-6-3" class="outline-4">
+<h4 id="sec-10-6-3"><span class="section-number-4">10.6.3</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span>&nbsp;<span class="mediumcode">mediumcode</span></span></h4>
+<div class="outline-text-4" id="text-10-6-3">
 
 
 
@@ -1441,9 +1408,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-5" class="outline-4">
-<h4 id="sec-10-6-5"><span class="section-number-4">10.6.5</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-10-6-5">
+<div id="outline-container-10-6-4" class="outline-4">
+<h4 id="sec-10-6-4"><span class="section-number-4">10.6.4</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-10-6-4">
 
 
 <ul>
@@ -1469,9 +1436,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-6" class="outline-4">
-<h4 id="sec-10-6-6"><span class="section-number-4">10.6.6</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-10-6-6">
+<div id="outline-container-10-6-5" class="outline-4">
+<h4 id="sec-10-6-5"><span class="section-number-4">10.6.5</span> source-uris-&gt;importable-wallpaper &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-10-6-5">
 
 
 <ul>
@@ -1500,9 +1467,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-7" class="outline-4">
-<h4 id="sec-10-6-7"><span class="section-number-4">10.6.7</span> Add to the user's library &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-10-6-7">
+<div id="outline-container-10-6-6" class="outline-4">
+<h4 id="sec-10-6-6"><span class="section-number-4">10.6.6</span> Add to the user's library &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-10-6-6">
 
 
 
@@ -1520,9 +1487,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-8" class="outline-4">
-<h4 id="sec-10-6-8"><span class="section-number-4">10.6.8</span> Download Each source URI &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-10-6-8">
+<div id="outline-container-10-6-7" class="outline-4">
+<h4 id="sec-10-6-7"><span class="section-number-4">10.6.7</span> Download Each source URI &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-10-6-7">
 
 
 
@@ -1547,9 +1514,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-9" class="outline-4">
-<h4 id="sec-10-6-9"><span class="section-number-4">10.6.9</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-10-6-9">
+<div id="outline-container-10-6-8" class="outline-4">
+<h4 id="sec-10-6-8"><span class="section-number-4">10.6.8</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-10-6-8">
 
 
 
@@ -1573,9 +1540,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-10" class="outline-4">
-<h4 id="sec-10-6-10"><span class="section-number-4">10.6.10</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-10-6-10">
+<div id="outline-container-10-6-9" class="outline-4">
+<h4 id="sec-10-6-9"><span class="section-number-4">10.6.9</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-10-6-9">
 
 
 
@@ -1599,9 +1566,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-10-6-11" class="outline-4">
-<h4 id="sec-10-6-11"><span class="section-number-4">10.6.11</span> Delete the Temporary Files &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-10-6-11">
+<div id="outline-container-10-6-10" class="outline-4">
+<h4 id="sec-10-6-10"><span class="section-number-4">10.6.10</span> Delete the Temporary Files &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<div class="outline-text-4" id="text-10-6-10">
 
 
 
@@ -1872,8 +1839,8 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
             <span style="color: #8a8a8a;">(</span>str-&gt;base64-byte-array source-uri<span style="color: #8a8a8a;">)</span>
             <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">recur</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">conj</span> expanded-source-uris
-                         <span style="color: #8a8a8a;">(</span>str-&gt;base64-byte-array source-uri<span style="color: #8a8a8a;">)</span>
-                         <span style="color: #8a8a8a;">)</span> source-uris<span style="color: #8a8a8a;">)</span>
+                         <span style="color: #8a8a8a;">(</span>str-&gt;base64-byte-array source-uri<span style="color: #8a8a8a;">))</span>
+                   source-uris<span style="color: #8a8a8a;">)</span>
 
             &#8230;<span style="color: #8a8a8a;">)</span>
       expanded-source-uris<span style="color: #8a8a8a;">)))</span>
@@ -1904,7 +1871,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-11-4-3" class="outline-4">
-<h4 id="sec-11-4-3"><span class="section-number-4">11.4.3</span> Setting a URLConnection's User-Agent string</h4>
+<h4 id="sec-11-4-3"><span class="section-number-4">11.4.3</span> Setting a URLConnection's User-Agent string &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
 <div class="outline-text-4" id="text-11-4-3">
 
 
@@ -1926,13 +1893,61 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 <h2 id="sec-12"><span class="section-number-2">12</span> Further experiments &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-12">
 
+<ul>
+<li>Browser Extensions
+</li>
+</ul>
 
 
 </div>
 
-<div id="outline-container-12-1" class="outline-3">
-<h3 id="sec-12-1"><span class="section-number-3">12.1</span> Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe</h3>
-<div class="outline-text-3" id="text-12-1">
+</div>
+
+<div id="outline-container-13" class="outline-2">
+<h2 id="sec-13"><span class="section-number-2">13</span> In Conclusion</h2>
+<div class="outline-text-2" id="text-13">
+
+<ul>
+<li>Facepalm!
+</li>
+<li>Base64 Is Easy to Get
+</li>
+<li>Base64 Is Easy to Process
+</li>
+<li>User-Agent Sniffing Bad!
+</li>
+</ul>
+
+</div>
+
+</div>
+
+<div id="outline-container-14" class="outline-2">
+<h2 id="sec-14"><span class="section-number-2">14</span> Thanks! Questions?</h2>
+<div class="outline-text-2" id="text-14">
+
+
+<ul>
+<li><a href="http://blog.wallpaperrr.cc">blog.wallpaperrr.cc</a>
+</li>
+<li><a href="https://twitter.com/wallpaperrr">@wallpaperrr</a>
+</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Code_snippets/Canvas">MDN Canvas Code Snippets</a>
+</li>
+<li><a href="http://clojure.org/">Clojure.org</a>
+</li>
+<li><a href="https://twitter.com/timvisher">@timvisher</a>
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-15" class="outline-2">
+<h2 id="sec-15"><span class="section-number-2">15</span> </h2>
+<div class="outline-text-2" id="text-15">
 
 
 
@@ -1945,10 +1960,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 </div>
 </div>
-</div>
 
 <div id="postamble">
-<p class="date">Date: 2013-04-24</p>
+<p class="date">Date: 2013-04-25</p>
 <p class="author">Author: Tim Visher</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

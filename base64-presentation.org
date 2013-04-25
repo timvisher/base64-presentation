@@ -122,12 +122,8 @@
      - on =gimme-data= message, post =import-data= message back to =event.source=
        - Actually, there's a fork here. We can either gather up the sourceURIs directly and do nothing else, or we can grab canvas data.
      - on =import-data= message, =POST= =import-data= JSON back to server
-   - Things to remember
-     - Cross-domain script communication is verbotten.
-     - Scripts from one frame on one domain can't access another's frame's DOM
-     - You're stuck with messaging
 
-** The bookmarklet                                                    :slide:
+** The bookmarklet
 
 #+begin_src js
   var d=document,
@@ -142,7 +138,7 @@
 
 #+end_src
 
-*** our bootstraperr                                                  :notes:
+*** our bootstraperr
 
     - responsible for scraping the site
       - as it's loaded into the window's DOM directly, it has access to it
@@ -150,48 +146,20 @@
 
 ** The Scraper                                                        :slide:
 
-#+begin_src js
-  wallpaperrrScraper.thefoxisblackScraper = function () {
-    var aNodes, imageUrls, i;
-    wallpaperrrScraper.title =
-      document.querySelector('.post h2 a').textContent;
-    aNodes = document.querySelectorAll('#wallpaper a');
-    imageUrls = [];
-    for (i = 0; i < aNodes.length; i += 1) {
-      imageUrls.push(aNodes[i].href);
-    }
-    wallpaperrrScraper.sourceUri = imageUrls;
-    wallpaperrrScraper.merge = true;
-    wallpaperrrScraper.insertIFrame();
-  };
-#+end_src
+   #+begin_src js
+     wallpaperrrScraper.scrapeSite = function () {
+       var siteScraper;
+     
+       siteScraper = wallpaperrrScraper.matchingScraper();
+     
+       return siteScraper ? siteScraper() : wallpaperrrScraper.defaultScraper();
+     };
+   #+end_src
 
-*** The anatomy of a scraper                                          :notes:
+*** Calling the scraper                                               :notes:
 
-    - I need 3 things: title, source, and the uris.
-
-    - Title is used as the title of the wallpaper in your library as well as the name of the wallpaper file on downloading it.
-
-    - Source is used to to link back to the source if others want to import that wallpaper.
-
-    - Source URIs are used to download the actual wallpapers. Alternatively to the source URIs, I could have a series of base64 strings.
-
-** The Scraper                                                        :slide:
-
-#+begin_src js
-  wallpaperrrScraper.scraperDispatch = {
-    "thefoxisblack.com": wallpaperrrScraper.thefoxisblackScraper,
-    "10.0.0.*":          wallpaperrrScraper.localhostScraper,
-  };
-#+end_src
-
-*** The dispatch table                                                :notes:
-
-   - Dispatch tables are nice! I picked them up from Relay.
-
-   - Anyone can assoc into them, potentially opening up extensions without code redeployment.
-
-   - This particular stricture is nice because I can use regexs
+    - We provide a default scraper.
+    - A saner language would let me get a key out of a map with a default.
 
 ** The Scraper                                                        :slide:
 
@@ -219,30 +187,65 @@
 ** The Scraper                                                        :slide:
 
 #+begin_src js
-  wallpaperrrScraper.scrapeSite = function () {
-    var siteScraper;
-
-    siteScraper = wallpaperrrScraper.matchingScraper();
-
-    return siteScraper ? siteScraper() : wallpaperrrScraper.defaultScraper();
+  wallpaperrrScraper.scraperDispatch = {
+    "thefoxisblack.com": wallpaperrrScraper.thefoxisblackScraper,
+    "10.0.0.*":          wallpaperrrScraper.localhostScraper,
   };
 #+end_src
 
-*** Calling the scraper                                               :notes:
+*** The dispatch table                                                :notes:
 
-    - We provide a default scraper.
-    - A saner language would let me get a key out of a map with a default.
+   - Dispatch tables are nice! I picked them up from Relay.
 
-** The =iframe=
+   - Anyone can assoc into them, potentially opening up extensions without code redeployment.
+
+   - This particular structure is nice because I can use regexs
+
+** The Scraper                                                        :slide:
 
 #+begin_src js
-  // import.js
+  wallpaperrrScraper.thefoxisblackScraper = function () {
+    var aNodes, imageUrls, i;
+    wallpaperrrScraper.title =
+      document.querySelector('.post h2 a').textContent;
+    aNodes = document.querySelectorAll('#wallpaper a');
+    imageUrls = [];
+    for (i = 0; i < aNodes.length; i += 1) {
+      imageUrls.push(aNodes[i].href);
+    }
+    wallpaperrrScraper.sourceUri = imageUrls;
+    wallpaperrrScraper.merge = true;
+    wallpaperrrScraper.insertIFrame();
+  };
+#+end_src
+   
+*** The anatomy of a scraper                                          :notes:
+
+    - I need 3 things: title, source, and the uris.
+
+    - Title is used as the title of the wallpaper in your library as well as the name of the wallpaper file on downloading it.
+
+    - Source is used to to link back to the source if others want to import that wallpaper.
+
+    - Source URIs are used to download the actual wallpapers. Alternatively to the source URIs, I could have a series of base64 strings.
+
+** Set Up Message Handlers                                            :slide:
+
+#+begin_src js
+  wallpaperrrScraper.messageHandlers = {
+    'gimme-import-data': wallpaperrrScraper.postImportDataMessage
+  };
+#+end_src
+
+** Insert the =iframe=                                                :slide:
+
+#+begin_src js
   wallpaperrrScraper.insertIFrame = function () {
     var i, isrc;
     i =  document.createElement('iframe');
     i.setAttribute('id', 'addFrame');
     i.setAttribute('src', 'http://localhost:3000/bookmarklet-import');
-    i.setAttribute('style', 'position: fixed; top: 10px; left: 10px; height: 200px; width: 200px; border: 5px solid #333; z-index: 12345;');
+    i.setAttribute('style', 'position: fixed; …');
     document.body.appendChild(i);
     i.focus();
   };
@@ -269,19 +272,10 @@
     };
 #+end_src
 
-***                                                                   :notes:
 ** =postMessage= to site                                              :slide:
 
 #+begin_src js
-  var messageHandlers = {
-    'gimme-import-data': postImportDataMessage
-  };
-#+end_src
-
-** =postMessage= to site                                              :slide:
-
-#+begin_src js
-  function handleMessage(e) {
+  wallpaperrrScraper.handleMessage = function (e) {
     if ('wallpaperSite' !== e.data.target) {
       return false;
     }
@@ -297,13 +291,13 @@
 ** =postMessage= to Wallpaperrr                                       :slide:
 
 #+begin_src js
-  var postImportDataMessage = function (e) {
+  wallpaperrrScraper.postImportDataMessage = function (e) {
     var payload;
     payload = {
-      'title': Wallpaperrr.Scraper.title,
-      'sourceUri': Wallpaperrr.Scraper.sourceUri,
-      'source': Wallpaperrr.Scraper.source,
-      'merge': Wallpaperrr.Scraper.merge
+      'title': self.title,
+      'sourceUri': self.sourceUri,
+      'source': self.source,
+      'merge': self.merge
     };
     e.source.postMessage(payload, '*');
   };
@@ -454,52 +448,50 @@
     - Compojure is a thin wrapper (started at around 200 SLOC) around consructing Ring handler functions.
     - It provides a series of Macros which make it easy to declare what kind of request you're handling, the URL you expect to hit, and how you want to destructure the parameters that can come in.
 
-** The Transaction Script                                             :slide:
+** The Transaction Script                                     :slide:bigcode:
 
-   - Expand the source URIs
-   - Transform source URIs to importable wallpaper
-   - Add importable wallpapers to user lib
-   - Download each to global file-store
-   - Add thumbnails for each to global file-stoer
-   - Delete temporary files
-
-*** The Transaction Script                                    :slide:bigcode:
-
-    #+begin_src clojure
-      (defn import-wallpaper
-        ([username store-base merge? title source source-uris]
-           (let [->importable-wallpaper (partial lib/import-uri->importable-wallpaper username title source)
-                 ->sanitized-title      (fn [wallpaper]
-                                          (lib/sanitize-title username (:title wallpaper) (:thumbnail-resolution wallpaper)))
-                 source-uris            (expand-source-uris source-uris)
-                 importable-wallpapers  (doall
-                                         (filter identity (map ->importable-wallpaper source-uris)))]
-             (if (not (empty? importable-wallpapers))
-               (let [source-uris              (map :source-uri importable-wallpapers)
-                     wallpapers               (map :wallpaper importable-wallpapers)
-                     sanitized-titles         (map ->sanitized-title wallpapers)
-                     shortest-sanitized-title (first (sort-by count sanitized-title))
-                     sanitized-title          shortest-sanitized-title
-                     unique-titles            (lib/unique-titles username sanitized-title)
-                     wallpapers               (map #(assoc %1 :title %2) wallpapers unique-titles)
-                     wallpapers               (if merge? [(reduce merge-wallpapers wallpapers)] wallpapers)]
-                 (dorun (map (partial lib/add-library-wallpaper! username) wallpapers))
-                 (store/put :file-system store-base (str "libraries/" username ".clj") (pr-str (into #{}  (deref (lib/new-library username)))))
-                 (let [resolutions          (map (comp :thumbnail-resolution :wallpaper) importable-wallpapers)
-                       library-object-ids   (map #(lib/wallpaper->library-object-id %1 "library" %2) (map :wallpaper importable-wallpapers) resolutions)
-                       thumbnail-object-ids (map #(lib/wallpaper->thumbnail-object-id %1 "thumbnails" %2) (map :wallpaper importable-wallpapers) resolutions)]
-                   (dorun
-                    (map #(with-open [is (io/input-stream %2)] (store/put :file-system store-base %1 is)) library-object-ids source-uris))
-                   (dorun
-                    (map (partial store/create-thumbnail :file-system store-base) library-object-ids thumbnail-object-ids)))
-                 (dorun
-                  (map fs/delete (filter fs/exists? (filter string? source-uris))))
-                 wallpapers)
-               []))))
-    #+end_src
+   #+begin_src clojure
+     (defn import-wallpaper
+       ([username store-base merge? title source source-uris]
+          (let [->importable-wallpaper (partial lib/import-uri->importable-wallpaper username title source)
+                ->sanitized-title      (fn [wallpaper]
+                                         (lib/sanitize-title username (:title wallpaper) (:thumbnail-resolution wallpaper)))
+                source-uris            (expand-source-uris source-uris)
+                importable-wallpapers  (doall
+                                        (filter identity (map ->importable-wallpaper source-uris)))]
+            (if (not (empty? importable-wallpapers))
+              (let [source-uris              (map :source-uri importable-wallpapers)
+                    wallpapers               (map :wallpaper importable-wallpapers)
+                    sanitized-titles         (map ->sanitized-title wallpapers)
+                    shortest-sanitized-title (first (sort-by count sanitized-title))
+                    sanitized-title          shortest-sanitized-title
+                    unique-titles            (lib/unique-titles username sanitized-title)
+                    wallpapers               (map #(assoc %1 :title %2) wallpapers unique-titles)
+                    wallpapers               (if merge? [(reduce merge-wallpapers wallpapers)] wallpapers)]
+                (dorun (map (partial lib/add-library-wallpaper! username) wallpapers))
+                (store/put :file-system store-base (str "libraries/" username ".clj") (pr-str (into #{}  (deref (lib/new-library username)))))
+                (let [resolutions          (map (comp :thumbnail-resolution :wallpaper) importable-wallpapers)
+                      library-object-ids   (map #(lib/wallpaper->library-object-id %1 "library" %2) (map :wallpaper importable-wallpapers) resolutions)
+                      thumbnail-object-ids (map #(lib/wallpaper->thumbnail-object-id %1 "thumbnails" %2) (map :wallpaper importable-wallpapers) resolutions)]
+                  (dorun
+                   (map #(with-open [is (io/input-stream %2)] (store/put :file-system store-base %1 is)) library-object-ids source-uris))
+                  (dorun
+                   (map (partial store/create-thumbnail :file-system store-base) library-object-ids thumbnail-object-ids)))
+                (dorun
+                 (map fs/delete (filter fs/exists? (filter string? source-uris))))
+                wallpapers)
+              []))))
+   #+end_src
 
 **** The Transaction Script                                           :notes:
 
+     - An Overview
+        - Expand the source URIs
+        - Transform source URIs to importable wallpaper
+        - Add importable wallpapers to user lib
+        - Download each to global file-store
+        - Add thumbnails for each to global file-store
+        - Delete temporary files
      - I'm creating functions in 4 different ways here. partial, comp, fn, and #(). Yeah, Clojure's functional alright.
        - many are anonymous, 2 are named in the let.
      - This is a comman pattern for clojure code. Make a let that names each step of your algorithm so you can reference it later.
@@ -785,14 +777,14 @@
                [source-uri & source-uris] (filter importable-uri? source-uris)]
           (if source-uri
             (cond …
-
+      
                   …
-
+      
                   (str->base64-byte-array source-uri)
                   (recur (conj expanded-source-uris
-                               (str->base64-byte-array source-uri)
-                               ) source-uris)
-
+                               (str->base64-byte-array source-uri))
+                         source-uris)
+      
                   …)
             expanded-source-uris)))
     #+end_src
@@ -806,14 +798,28 @@
                      (comment "NB: safe to ignore. Means base64 decoding failed."))))
     #+end_src
 
-*** Setting a URLConnection's User-Agent string
+*** Setting a URLConnection's User-Agent string                       :slide:
 
 **** Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.
 * Further experiments                                                 :slide:
+  - Browser Extensions
 
-** Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe
+* In Conclusion
+  - Facepalm!
+  - Base64 Is Easy to Get
+  - Base64 Is Easy to Process
+  - User-Agent Sniffing Bad!
+* Thanks! Questions?
 
-#+TAGS: slide notes
+  - [[http://blog.wallpaperrr.cc][blog.wallpaperrr.cc]]
+  - [[https://twitter.com/wallpaperrr][@wallpaperrr]]
+  - [[https://developer.mozilla.org/en-US/docs/Code_snippets/Canvas][MDN Canvas Code Snippets]]
+  - [[http://clojure.org/][Clojure.org]]
+  - [[https://twitter.com/timvisher][@timvisher]]
+
+* 
+
+#+TAGS: slide(s) notes(n)
 
 #+OPTIONS: H:4
 
