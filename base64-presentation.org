@@ -3,7 +3,7 @@
 #+AUTHOR: Tim Visher
 #+Babel: :results silent
 
-* Introduction                                                        :slide:
+* What is Wallpaperrr?                                                :slide:
 
   - Relay Network
 
@@ -154,7 +154,7 @@
    - This particular stricture is nice because I can use regexs
 
 ** The Scraper                                                        :slide:
-   
+
    #+begin_src js
      // man, I want underscore!
      wallpaperrrScraper.matchingScraper = function (sitePattern) {
@@ -177,13 +177,13 @@
     - Passing a string to =match= works nicely and allows us to use regexs.
 
 ** The Scraper                                                        :slide:
-   
+
 #+begin_src js
   wallpaperrrScraper.scrapeSite = function () {
     var siteScraper;
-  
+
     siteScraper = wallpaperrrScraper.matchingScraper();
-  
+
     return siteScraper ? siteScraper() : wallpaperrrScraper.defaultScraper();
   };
 #+end_src
@@ -312,7 +312,7 @@
 
   - A Compojure =POST= Route
   - Some Ring =middleware=
-  - Some Clojure =multimethod=s
+  - Some Clojure =multimethods= 
   - javax.imageio.ImageIO
   - org.jdesktop.swingx.graphics.GraphicsUtilities
 
@@ -329,7 +329,7 @@
 ** The Back End Process                                               :slide:
 
    [[file:images/the_process.png]]
-   
+
 *** The Back End Process                                              :notes:
 
     - The Process
@@ -464,7 +464,7 @@
        - many are anonymous, 2 are named in the let.
      - This is a comman pattern for clojure code. Make a let that names each step of your algorithm so you can reference it later.
      - Notice dorun/doall. This is because Clojure is lazily evaluated and when you get back to the front-end you won't be able to iterate over the lazyseq.
-       
+
 *** Expanding the source URIs                                         :slide:
 
     #+begin_src clojure
@@ -475,11 +475,11 @@
             (cond (zipfile? source-uri)
                   (recur expanded-source-uris
                          (into source-uris (zipfile-uri->temp-files source-uri)))
-      
+
                   (url-exists? source-uri)
                   (recur (conj expanded-source-uris (source-uri->temp-file source-uri))
                          source-uris)
-      
+
                   :drop-it
                   (recur expanded-source-uris source-uris))
             expanded-source-uris)))
@@ -492,7 +492,7 @@
      - In the case of a zipfile, we want to drop the original uri and replace it with many temporary files.
 
 *** source-uris->importable-wallpaper                                 :slide:
-    
+
 #+begin_src clojure
   (defn import-uri->importable-wallpaper
     ([username title source source-uri]
@@ -506,8 +506,8 @@
                                            source-uri))))
 #+end_src
 
-*** source-uris->importable-wallpaper                         :slide:mediumcode:
-    
+*** source-uris->importable-wallpaper                      :slide:mediumcode:
+
 #+begin_src clojure
   (defn import-uri->wallpaper [username title source source-uri]
     (if-let [image (wc/uri->image source-uri)]
@@ -534,10 +534,10 @@
 
       #+begin_src clojure
         (defmulti java-image "Attempts to coerce it's argument to a BufferedImage" class)
-        
+
         (defmethod java-image BufferedImage [^BufferedImage image]
           (GraphicsUtilities/toCompatibleImage image))
-        
+
         (defmethod java-image :default [input-streamable]
           (input-streamable->java-image input-streamable))
       #+end_src
@@ -548,7 +548,7 @@
 
       #+begin_src clojure
         (defmulti extensions "Attempts to get image format extensions for INPUT" class)
-        
+
         (defmethod extensions :default [file]
           (with-open [is (io/input-stream file)]
             (->> (ImageIO/createImageInputStream is)
@@ -584,21 +584,65 @@
                                 (store/put :file-system store-base %1 is))]
       (dorun
        (map download-wallpaper library-object-ids source-uris)))
-    (let [create-thumbnail (partial store/create-thumbnail :file-system store-base)]
-      (dorun
-       (map create-thumbnail library-object-ids thumbnail-object-ids))))
+    …)
 #+end_src
 *** Thumbnailization                                                  :slide:
 
-    
+    #+begin_src clojure
+      (let [->thumbnail-resolution (comp :thumbnail-resolution :wallpaper)
+            resolutions            (map ->thumbnail-resolution importable-wallpapers)
+            wallpapers             (map :wallpaper importable-wallpapers)
+            ->library-object-id    #(lib/wallpaper->library-object-id %1 "library" %2)
+            library-object-ids     (map ->library-object-id wallpapers resolutions)
+            ->thumbnail-object-id  #(lib/wallpaper->thumbnail-object-id %1 "thumbnails" %2)
+            thumbnail-object-ids   (map ->thumbnail-object-id wallpapers resolutions)]
+        …
+        (let [create-thumbnail (partial store/create-thumbnail :file-system store-base)]
+          (dorun
+           (map create-thumbnail library-object-ids thumbnail-object-ids))))
+    #+end_src
 
+*** Thumbnailization                                                  :slide:
+
+    #+begin_src clojure
+      ;;; wallpaper-manager-core.store.store
+      (defmulti create-thumbnail "Create a thumbnail in the store …" method)
+
+      ;;; wallpaper-manager-core.store.file-system
+      (defmethod create-thumbnail :file-system [_ base from-object-id to-object-id]
+        (let [from (get :file-system base from-object-id)
+              to   (get :file-system base to-object-id)]
+          (fs/mkdirs (fs/parent to))
+          (let [thumbnail-java-image (image/scale from)
+                thumbnail-image      (image/java-image->image from thumbnail-java-image)]
+            (image/write thumbnail-java-image (:extension thumbnail-image) (io/file to)))
+          to-object-id))
+    #+end_src
 *** Delete the Temporary Files                                        :slide:
 
-*** Return the Map                                                    :slide:
-** Send the Response                                                  :slide:
-** Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).
+    #+begin_src clojure
+      (dorun
+       (map fs/delete (filter fs/exists? (filter string? source-uris))))
+    #+end_src
 
-** Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server
+** Send the Response                                                  :slide:
+
+   #+begin_src clojure
+     (defmethod wallpaper-post-route "application/json;q=0.0"
+       [_ username title merge source sourceUri]
+       {:pre [(or (vector? sourceUri) (string? sourceUri))]}
+       (utf8-json-response
+        (let [wallpapers …
+              ->path     (fn [wallpaper]
+                           (str "/user/"
+                                username
+                                "/wallpaper/"
+                                (java.net.URLEncoder/encode (:title %) "UTF-8")))
+              wallpapers (map #(dissoc % :imported-at) wallpapers)
+              wallpapers (map #(assoc % :location (->path %)) wallpapers)]
+          (json/generate-string wallpapers))))
+   #+end_src
+
 * But what about Base64?                                              :slide:
 
 #+begin_src js
@@ -620,60 +664,92 @@
 
       - Same Origin Policy!
 
-* 2 Paths
+** 2 Paths                                                            :slide:
 
-** How to get Same Origin image data to the back end and imported.
+   - The Punchline
+   - Same Origin Data
+   - Cross-Domain Data
 
-*** Use HTML Canvas to get a datURL.
+*** How to get Same Origin image data to the back end and imported.
 
-*** Send it to wallpaperrr via postMessage and JSON
+    - Use HTML Canvas to get a datURL.
+    - Send it to wallpaperrr via postMessage and JSON
+    - Implement an extension and java-image multimethod for (class (byte-array 1))
+    - Everything else Just Works™
 
-*** Implement an extension and java-image multimethod for (class (byte-array 1))
+** Client-Side Concerns
 
-**** Everything else just works
-** How to fix importing wallpaper from thefoxisblack.
+*** Base64 encoding
 
-*** Set your user-agent in the URLConnection
-* Client-Side Concerns
+    #+begin_src javascript
+      wallpaperrrBookmarkletImport.importData = function (importData) {
+        // self.imgsLoaded(importData);
+        self.importDataToBase64(importData);
+      };
+    #+end_src
 
-** Base64 encoding
+*** Base64 encoding
 
-*** HTML Canvas, toDataURI
+    #+begin_src javascript
+      wallpaperrrBookmarkletImport.importDataToBase64 = function (importData) {
+        var countdownLatch, i;
+      
+        countdownLatch = {};
+        for (i = 0; i < importData.sourceUri.length; i += 1) {
+          countdownLatch[importData.sourceUri[i]] = true;
+      
+          self.loadImageFile(
+            importData.sourceUri[i],
+            function (base64String) {
+              imageUrls.push(base64String);
+              delete countdownLatch[importData.sourceUri[i]];
+      
+              if (0 === Object.keys(countdownLatch).length) {
+                importData.sourceUri = imageUrls;
+                self.imgsLoaded(importData);
+              }
+            });
+        }
+      };
+    #+end_src
 
-*** countdown latch
+*** Base64 encoding
 
-** Cross-Domain Scripts (Same Origin Policy)
+    #+begin_src javascript
+      wallpaperrrBookmarkletImport.loadImageFile = function (sURL, fCallback) {
+        var img = new Image();
+        img.src = sURL;
+        img.onload = function () {
+          self.canvas.width = this.width;
+          self.canvas.height = this.height;
+          self.ctx.clearRect(0, 0, this.width, this.height);
+          self.ctx.drawImage(this, 0, 0);
+          fCallback.call(this, self.dataUriToRawBase64(self.canvas.toDataURL()));
+        };
+      };
+      
+    #+end_src
 
-*** iframe communication via message posting
+*** I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.
 
-    I effectively implemented a very simple message bus using JSON.
+    http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#security-with-canvas-elements
 
-**** Each window can be the target of a message. If you post messages directly to the window, you don't need to be concerned with doubling up on handlers
+** Server-Side Concerns
 
-**** You want to know who's talking to whom, so we include the target attribute.
+*** Decoding Base64 data
 
-**** Dispatch tables help us line a particular message up with a function.
+**** Java's got that
 
-** I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.
+**** dataURIs are not base64 data
 
-   http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#security-with-canvas-elements
+*** Using Base64 data as an image
 
-* Server-Side Concerns
+**** clojure multimethods with class as the dispatch function `(class (byte-array 1))`
 
-** Decoding Base64 data
+*** Setting a URLConnection's User-Agent string
 
-*** Java's got that
-
-*** dataURIs are not base64 data
-
-** Using Base64 data as an image
-
-*** clojure multimethods with class as the dispatch function `(class (byte-array 1))`
-
-** Setting a URLConnection's User-Agent string
-
-*** Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.
-* Further experiments
+**** Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.
+* Further experiments                                                 :slide:
 
 ** Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe
 

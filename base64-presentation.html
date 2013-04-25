@@ -33,7 +33,7 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1 Introduction</a>
+<li><a href="#sec-1">1 What is Wallpaperrr?</a>
 <ul>
 <li>
 <ul>
@@ -156,81 +156,55 @@
 <li><a href="#sec-5-6-7">5.6.7 Add to the user's library</a></li>
 <li><a href="#sec-5-6-8">5.6.8 Download Each source URI</a></li>
 <li><a href="#sec-5-6-9">5.6.9 Thumbnailization</a></li>
-<li><a href="#sec-5-6-10">5.6.10 Delete the Temporary Files</a></li>
-<li><a href="#sec-5-6-11">5.6.11 Return the Map</a></li>
+<li><a href="#sec-5-6-10">5.6.10 Thumbnailization</a></li>
+<li><a href="#sec-5-6-11">5.6.11 Delete the Temporary Files</a></li>
 </ul>
 </li>
 <li><a href="#sec-5-7">5.7 Send the Response</a></li>
-<li><a href="#sec-5-8">5.8 Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</a></li>
-<li><a href="#sec-5-9">5.9 Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server</a></li>
 </ul>
 </li>
 <li><a href="#sec-6">6 But what about Base64?</a>
 <ul>
 <li><a href="#sec-6-1">6.1 notes</a></li>
+<li><a href="#sec-6-2">6.2 2 Paths</a>
+<ul>
+<li><a href="#sec-6-2-1">6.2.1 How to get Same Origin image data to the back end and imported.</a></li>
 </ul>
 </li>
-<li><a href="#sec-7">7 2 Paths</a>
+<li><a href="#sec-6-3">6.3 Client-Side Concerns</a>
 <ul>
-<li><a href="#sec-7-1">7.1 How to get Same Origin image data to the back end and imported.</a>
+<li><a href="#sec-6-3-1">6.3.1 Base64 encoding</a>
 <ul>
-<li><a href="#sec-7-1-1">7.1.1 Use HTML Canvas to get a datURL.</a></li>
-<li><a href="#sec-7-1-2">7.1.2 Send it to wallpaperrr via postMessage and JSON</a></li>
-<li><a href="#sec-7-1-3">7.1.3 Implement an extension and java-image multimethod for (class (byte-array 1))</a>
+<li><a href="#sec-6-3-1-1">6.3.1.1 HTML Canvas, toDataURI</a></li>
+<li><a href="#sec-6-3-1-2">6.3.1.2 countdown latch</a></li>
+</ul>
+</li>
+<li><a href="#sec-6-3-2">6.3.2 I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.</a></li>
+</ul>
+</li>
+<li><a href="#sec-6-4">6.4 Server-Side Concerns</a>
 <ul>
-<li><a href="#sec-7-1-3-1">7.1.3.1 Everything else just works</a></li>
+<li><a href="#sec-6-4-1">6.4.1 Decoding Base64 data</a>
+<ul>
+<li><a href="#sec-6-4-1-1">6.4.1.1 Java's got that</a></li>
+<li><a href="#sec-6-4-1-2">6.4.1.2 dataURIs are not base64 data</a></li>
+</ul>
+</li>
+<li><a href="#sec-6-4-2">6.4.2 Using Base64 data as an image</a>
+<ul>
+<li><a href="#sec-6-4-2-1">6.4.2.1 clojure multimethods with class as the dispatch function `(class (byte-array 1))`</a></li>
+</ul>
+</li>
+<li><a href="#sec-6-4-3">6.4.3 Setting a URLConnection's User-Agent string</a>
+<ul>
+<li><a href="#sec-6-4-3-1">6.4.3.1 Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </li>
-<li><a href="#sec-7-2">7.2 How to fix importing wallpaper from thefoxisblack.</a>
+<li><a href="#sec-7">7 Further experiments</a>
 <ul>
-<li><a href="#sec-7-2-1">7.2.1 Set your user-agent in the URLConnection</a></li>
-</ul></li>
-</ul>
-</li>
-<li><a href="#sec-8">8 Client-Side Concerns</a>
-<ul>
-<li><a href="#sec-8-1">8.1 Base64 encoding</a>
-<ul>
-<li><a href="#sec-8-1-1">8.1.1 HTML Canvas, toDataURI</a></li>
-<li><a href="#sec-8-1-2">8.1.2 countdown latch</a></li>
-</ul>
-</li>
-<li><a href="#sec-8-2">8.2 Cross-Domain Scripts (Same Origin Policy)</a>
-<ul>
-<li><a href="#sec-8-2-1">8.2.1 iframe communication via message posting</a>
-<ul>
-<li><a href="#sec-8-2-1-1">8.2.1.1 Each window can be the target of a message. If you post messages directly to the window, you don't need to be concerned with doubling up on handlers</a></li>
-<li><a href="#sec-8-2-1-2">8.2.1.2 You want to know who's talking to whom, so we include the target attribute.</a></li>
-<li><a href="#sec-8-2-1-3">8.2.1.3 Dispatch tables help us line a particular message up with a function.</a></li>
-</ul></li>
-</ul>
-</li>
-<li><a href="#sec-8-3">8.3 I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.</a></li>
-</ul>
-</li>
-<li><a href="#sec-9">9 Server-Side Concerns</a>
-<ul>
-<li><a href="#sec-9-1">9.1 Decoding Base64 data</a>
-<ul>
-<li><a href="#sec-9-1-1">9.1.1 Java's got that</a></li>
-<li><a href="#sec-9-1-2">9.1.2 dataURIs are not base64 data</a></li>
-</ul>
-</li>
-<li><a href="#sec-9-2">9.2 Using Base64 data as an image</a>
-<ul>
-<li><a href="#sec-9-2-1">9.2.1 clojure multimethods with class as the dispatch function `(class (byte-array 1))`</a></li>
-</ul>
-</li>
-<li><a href="#sec-9-3">9.3 Setting a URLConnection's User-Agent string</a>
-<ul>
-<li><a href="#sec-9-3-1">9.3.1 Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</a></li>
-</ul></li>
-</ul>
-</li>
-<li><a href="#sec-10">10 Further experiments</a>
-<ul>
-<li><a href="#sec-10-1">10.1 Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe</a></li>
+<li><a href="#sec-7-1">7.1 Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe</a></li>
 </ul>
 </li>
 </ul>
@@ -238,7 +212,7 @@
 </div>
 
 <div id="outline-container-1" class="outline-2">
-<h2 id="sec-1"><span class="section-number-2">1</span> Introduction &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
+<h2 id="sec-1"><span class="section-number-2">1</span> What is Wallpaperrr? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-1">
 
 
@@ -924,7 +898,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </li>
 <li>Some Ring <code>middleware</code>
 </li>
-<li>Some Clojure =multimethod=s
+<li>Some Clojure <code>multimethods</code> 
 </li>
 <li>javax.imageio.ImageIO
 </li>
@@ -1460,9 +1434,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
                               <span style="color: #8a8a8a;">(</span>store/put <span style="color: #00cdcd;">:file-system</span> store-base %1 is<span style="color: #8a8a8a;">))</span>]
     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span>
      <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> download-wallpaper library-object-ids source-uris<span style="color: #8a8a8a;">)))</span>
-  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [create-thumbnail <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">partial</span> store/create-thumbnail <span style="color: #00cdcd;">:file-system</span> store-base<span style="color: #8a8a8a;">)</span>]
-    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span>
-     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> create-thumbnail library-object-ids thumbnail-object-ids<span style="color: #8a8a8a;">))))</span>
+  &#8230;<span style="color: #8a8a8a;">)</span>
 </pre>
 
 </div>
@@ -1476,22 +1448,63 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 
 
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [-&gt;thumbnail-resolution <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">comp</span> <span style="color: #00cdcd;">:thumbnail-resolution</span> <span style="color: #00cdcd;">:wallpaper</span><span style="color: #8a8a8a;">)</span>
+      resolutions            <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> -&gt;thumbnail-resolution importable-wallpapers<span style="color: #8a8a8a;">)</span>
+      wallpapers             <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> <span style="color: #00cdcd;">:wallpaper</span> importable-wallpapers<span style="color: #8a8a8a;">)</span>
+      -&gt;library-object-id    #<span style="color: #8a8a8a;">(</span>lib/wallpaper-&gt;library-object-id %1 <span style="color: #00cdcd;">"library"</span> %2<span style="color: #8a8a8a;">)</span>
+      library-object-ids     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> -&gt;library-object-id wallpapers resolutions<span style="color: #8a8a8a;">)</span>
+      -&gt;thumbnail-object-id  #<span style="color: #8a8a8a;">(</span>lib/wallpaper-&gt;thumbnail-object-id %1 <span style="color: #00cdcd;">"thumbnails"</span> %2<span style="color: #8a8a8a;">)</span>
+      thumbnail-object-ids   <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> -&gt;thumbnail-object-id wallpapers resolutions<span style="color: #8a8a8a;">)</span>]
+  &#8230;
+  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [create-thumbnail <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">partial</span> store/create-thumbnail <span style="color: #00cdcd;">:file-system</span> store-base<span style="color: #8a8a8a;">)</span>]
+    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span>
+     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> create-thumbnail library-object-ids thumbnail-object-ids<span style="color: #8a8a8a;">))))</span>
+</pre>
+
+
 </div>
 
 </div>
 
 <div id="outline-container-5-6-10" class="outline-4">
-<h4 id="sec-5-6-10"><span class="section-number-4">5.6.10</span> Delete the Temporary Files &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<h4 id="sec-5-6-10"><span class="section-number-4">5.6.10</span> Thumbnailization &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
 <div class="outline-text-4" id="text-5-6-10">
 
+
+
+
+
+<pre class="src src-clojure"><span style="color: #5c5cff; font-weight: bold;">;;; </span><span style="color: #5c5cff; font-style: italic;">wallpaper-manager-core.store.store</span>
+<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defmulti</span> <span style="color: #0000ee;">create-thumbnail</span> <span style="color: #00cdcd; font-style: italic;">"Create a thumbnail in the store &#8230;"</span> method<span style="color: #8a8a8a;">)</span>
+
+<span style="color: #5c5cff; font-weight: bold;">;;; </span><span style="color: #5c5cff; font-style: italic;">wallpaper-manager-core.store.file-system</span>
+<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defmethod</span> <span style="color: #0000ee;">create-thumbnail</span> <span style="color: #00cdcd;">:file-system</span> [_ base from-object-id to-object-id]
+  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [from <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">get</span> <span style="color: #00cdcd;">:file-system</span> base from-object-id<span style="color: #8a8a8a;">)</span>
+        to   <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">get</span> <span style="color: #00cdcd;">:file-system</span> base to-object-id<span style="color: #8a8a8a;">)</span>]
+    <span style="color: #8a8a8a;">(</span>fs/mkdirs <span style="color: #8a8a8a;">(</span>fs/parent to<span style="color: #8a8a8a;">))</span>
+    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [thumbnail-java-image <span style="color: #8a8a8a;">(</span>image/scale from<span style="color: #8a8a8a;">)</span>
+          thumbnail-image      <span style="color: #8a8a8a;">(</span>image/java-image-&gt;image from thumbnail-java-image<span style="color: #8a8a8a;">)</span>]
+      <span style="color: #8a8a8a;">(</span>image/write thumbnail-java-image <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:extension</span> thumbnail-image<span style="color: #8a8a8a;">)</span> <span style="color: #8a8a8a;">(</span>io/file to<span style="color: #8a8a8a;">)))</span>
+    to-object-id<span style="color: #8a8a8a;">))</span>
+</pre>
 
 </div>
 
 </div>
 
 <div id="outline-container-5-6-11" class="outline-4">
-<h4 id="sec-5-6-11"><span class="section-number-4">5.6.11</span> Return the Map &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
+<h4 id="sec-5-6-11"><span class="section-number-4">5.6.11</span> Delete the Temporary Files &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
 <div class="outline-text-4" id="text-5-6-11">
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dorun</span>
+ <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> fs/delete <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">filter</span> fs/exists? <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">filter</span> string? source-uris<span style="color: #8a8a8a;">))))</span>
+</pre>
+
 
 </div>
 </div>
@@ -1502,22 +1515,25 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 <h3 id="sec-5-7"><span class="section-number-3">5.7</span> Send the Response &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-5-7">
 
-</div>
-
-</div>
-
-<div id="outline-container-5-8" class="outline-3">
-<h3 id="sec-5-8"><span class="section-number-3">5.8</span> Detect what kind of wallpaper we're importing (support for single/multiple urls from the same wallpaper, multiple urls from disparate wallpapers, zip files (which get expanded to multiple disparate wallpapers), and base64 byte arrays which are decoded into images, again in single and disparate patterns) and then import them and add them to the users library (set via cookies).</h3>
-<div class="outline-text-3" id="text-5-8">
 
 
-</div>
 
-</div>
 
-<div id="outline-container-5-9" class="outline-3">
-<h3 id="sec-5-9"><span class="section-number-3">5.9</span> Subsequently the xhr returns to the client and the client allows the user to rate and tag, sending PUT requests back to the server</h3>
-<div class="outline-text-3" id="text-5-9">
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defmethod</span> <span style="color: #0000ee;">wallpaper-post-route</span> <span style="color: #00cdcd;">"application/json;q=0.0"</span>
+  [_ username title merge source <span style="color: #ff0000;">sourceUri</span>]
+  {<span style="color: #00cdcd;">:pre</span> [<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">or</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">vector?</span> <span style="color: #ff0000;">sourceUri</span><span style="color: #8a8a8a;">)</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">string?</span> <span style="color: #ff0000;">sourceUri</span><span style="color: #8a8a8a;">))</span>]}
+  <span style="color: #8a8a8a;">(</span>utf8-json-response
+   <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [wallpapers &#8230;
+         -&gt;path     <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">fn</span> [wallpaper]
+                      <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">str</span> <span style="color: #00cdcd;">"/user/"</span>
+                           username
+                           <span style="color: #00cdcd;">"/wallpaper/"</span>
+                           <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">java.net.URLEncoder/encode</span> <span style="color: #8a8a8a;">(</span><span style="color: #00cdcd;">:title</span> %<span style="color: #8a8a8a;">)</span> <span style="color: #00cdcd;">"UTF-8"</span><span style="color: #8a8a8a;">)))</span>
+         wallpapers <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> #<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">dissoc</span> % <span style="color: #00cdcd;">:imported-at</span><span style="color: #8a8a8a;">)</span> wallpapers<span style="color: #8a8a8a;">)</span>
+         wallpapers <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">map</span> #<span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">assoc</span> % <span style="color: #00cdcd;">:location</span> <span style="color: #8a8a8a;">(</span>-&gt;path %<span style="color: #8a8a8a;">))</span> wallpapers<span style="color: #8a8a8a;">)</span>]
+     <span style="color: #8a8a8a;">(</span>json/generate-string wallpapers<span style="color: #8a8a8a;">))))</span>
+</pre>
+
 
 </div>
 </div>
@@ -1567,12 +1583,180 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 
 </div>
+
+</div>
+
+<div id="outline-container-6-2" class="outline-3">
+<h3 id="sec-6-2"><span class="section-number-3">6.2</span> 2 Paths &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<div class="outline-text-3" id="text-6-2">
+
+
+<ul>
+<li>The Punchline
+</li>
+<li>Same Origin Data
+</li>
+<li>Cross-Domain Data
+</li>
+</ul>
+
+
+
+</div>
+
+<div id="outline-container-6-2-1" class="outline-4">
+<h4 id="sec-6-2-1"><span class="section-number-4">6.2.1</span> How to get Same Origin image data to the back end and imported.</h4>
+<div class="outline-text-4" id="text-6-2-1">
+
+
+<ul>
+<li>Use HTML Canvas to get a datURL.
+
+</li>
+<li>Send it to wallpaperrr via postMessage and JSON
+
+</li>
+<li>Implement an extension and java-image multimethod for (class (byte-array 1))
+
+</li>
+<li>Everything else Just Works™
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-6-3" class="outline-3">
+<h3 id="sec-6-3"><span class="section-number-3">6.3</span> Client-Side Concerns</h3>
+<div class="outline-text-3" id="text-6-3">
+
+
+
+</div>
+
+<div id="outline-container-6-3-1" class="outline-4">
+<h4 id="sec-6-3-1"><span class="section-number-4">6.3.1</span> Base64 encoding</h4>
+<div class="outline-text-4" id="text-6-3-1">
+
+
+
+
+
+<pre class="src src-javascript"></pre>
+
+
+
+</div>
+
+<div id="outline-container-6-3-1-1" class="outline-5">
+<h5 id="sec-6-3-1-1"><span class="section-number-5">6.3.1.1</span> HTML Canvas, toDataURI</h5>
+<div class="outline-text-5" id="text-6-3-1-1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-6-3-1-2" class="outline-5">
+<h5 id="sec-6-3-1-2"><span class="section-number-5">6.3.1.2</span> countdown latch</h5>
+<div class="outline-text-5" id="text-6-3-1-2">
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-6-3-2" class="outline-4">
+<h4 id="sec-6-3-2"><span class="section-number-4">6.3.2</span> I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.</h4>
+<div class="outline-text-4" id="text-6-3-2">
+
+
+<p>
+    <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#security-with-canvas-elements">http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#security-with-canvas-elements</a>
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-6-4" class="outline-3">
+<h3 id="sec-6-4"><span class="section-number-3">6.4</span> Server-Side Concerns</h3>
+<div class="outline-text-3" id="text-6-4">
+
+
+
+</div>
+
+<div id="outline-container-6-4-1" class="outline-4">
+<h4 id="sec-6-4-1"><span class="section-number-4">6.4.1</span> Decoding Base64 data</h4>
+<div class="outline-text-4" id="text-6-4-1">
+
+
+
+</div>
+
+<div id="outline-container-6-4-1-1" class="outline-5">
+<h5 id="sec-6-4-1-1"><span class="section-number-5">6.4.1.1</span> Java's got that</h5>
+<div class="outline-text-5" id="text-6-4-1-1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-6-4-1-2" class="outline-5">
+<h5 id="sec-6-4-1-2"><span class="section-number-5">6.4.1.2</span> dataURIs are not base64 data</h5>
+<div class="outline-text-5" id="text-6-4-1-2">
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-6-4-2" class="outline-4">
+<h4 id="sec-6-4-2"><span class="section-number-4">6.4.2</span> Using Base64 data as an image</h4>
+<div class="outline-text-4" id="text-6-4-2">
+
+
+
+</div>
+
+<div id="outline-container-6-4-2-1" class="outline-5">
+<h5 id="sec-6-4-2-1"><span class="section-number-5">6.4.2.1</span> clojure multimethods with class as the dispatch function `(class (byte-array 1))`</h5>
+<div class="outline-text-5" id="text-6-4-2-1">
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-6-4-3" class="outline-4">
+<h4 id="sec-6-4-3"><span class="section-number-4">6.4.3</span> Setting a URLConnection's User-Agent string</h4>
+<div class="outline-text-4" id="text-6-4-3">
+
+
+
+</div>
+
+<div id="outline-container-6-4-3-1" class="outline-5">
+<h5 id="sec-6-4-3-1"><span class="section-number-5">6.4.3.1</span> Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</h5>
+<div class="outline-text-5" id="text-6-4-3-1">
+
+</div>
+</div>
+</div>
 </div>
 
 </div>
 
 <div id="outline-container-7" class="outline-2">
-<h2 id="sec-7"><span class="section-number-2">7</span> 2 Paths</h2>
+<h2 id="sec-7"><span class="section-number-2">7</span> Further experiments &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-7">
 
 
@@ -1580,245 +1764,8 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-7-1" class="outline-3">
-<h3 id="sec-7-1"><span class="section-number-3">7.1</span> How to get Same Origin image data to the back end and imported.</h3>
+<h3 id="sec-7-1"><span class="section-number-3">7.1</span> Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe</h3>
 <div class="outline-text-3" id="text-7-1">
-
-
-
-</div>
-
-<div id="outline-container-7-1-1" class="outline-4">
-<h4 id="sec-7-1-1"><span class="section-number-4">7.1.1</span> Use HTML Canvas to get a datURL.</h4>
-<div class="outline-text-4" id="text-7-1-1">
-
-
-</div>
-
-</div>
-
-<div id="outline-container-7-1-2" class="outline-4">
-<h4 id="sec-7-1-2"><span class="section-number-4">7.1.2</span> Send it to wallpaperrr via postMessage and JSON</h4>
-<div class="outline-text-4" id="text-7-1-2">
-
-
-</div>
-
-</div>
-
-<div id="outline-container-7-1-3" class="outline-4">
-<h4 id="sec-7-1-3"><span class="section-number-4">7.1.3</span> Implement an extension and java-image multimethod for (class (byte-array 1))</h4>
-<div class="outline-text-4" id="text-7-1-3">
-
-
-
-</div>
-
-<div id="outline-container-7-1-3-1" class="outline-5">
-<h5 id="sec-7-1-3-1"><span class="section-number-5">7.1.3.1</span> Everything else just works</h5>
-<div class="outline-text-5" id="text-7-1-3-1">
-
-</div>
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-7-2" class="outline-3">
-<h3 id="sec-7-2"><span class="section-number-3">7.2</span> How to fix importing wallpaper from thefoxisblack.</h3>
-<div class="outline-text-3" id="text-7-2">
-
-
-
-</div>
-
-<div id="outline-container-7-2-1" class="outline-4">
-<h4 id="sec-7-2-1"><span class="section-number-4">7.2.1</span> Set your user-agent in the URLConnection</h4>
-<div class="outline-text-4" id="text-7-2-1">
-
-</div>
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-8" class="outline-2">
-<h2 id="sec-8"><span class="section-number-2">8</span> Client-Side Concerns</h2>
-<div class="outline-text-2" id="text-8">
-
-
-
-</div>
-
-<div id="outline-container-8-1" class="outline-3">
-<h3 id="sec-8-1"><span class="section-number-3">8.1</span> Base64 encoding</h3>
-<div class="outline-text-3" id="text-8-1">
-
-
-
-</div>
-
-<div id="outline-container-8-1-1" class="outline-4">
-<h4 id="sec-8-1-1"><span class="section-number-4">8.1.1</span> HTML Canvas, toDataURI</h4>
-<div class="outline-text-4" id="text-8-1-1">
-
-
-</div>
-
-</div>
-
-<div id="outline-container-8-1-2" class="outline-4">
-<h4 id="sec-8-1-2"><span class="section-number-4">8.1.2</span> countdown latch</h4>
-<div class="outline-text-4" id="text-8-1-2">
-
-
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-8-2" class="outline-3">
-<h3 id="sec-8-2"><span class="section-number-3">8.2</span> Cross-Domain Scripts (Same Origin Policy)</h3>
-<div class="outline-text-3" id="text-8-2">
-
-
-
-</div>
-
-<div id="outline-container-8-2-1" class="outline-4">
-<h4 id="sec-8-2-1"><span class="section-number-4">8.2.1</span> iframe communication via message posting</h4>
-<div class="outline-text-4" id="text-8-2-1">
-
-
-<p>
-    I effectively implemented a very simple message bus using JSON.
-</p>
-
-</div>
-
-<div id="outline-container-8-2-1-1" class="outline-5">
-<h5 id="sec-8-2-1-1"><span class="section-number-5">8.2.1.1</span> Each window can be the target of a message. If you post messages directly to the window, you don't need to be concerned with doubling up on handlers</h5>
-<div class="outline-text-5" id="text-8-2-1-1">
-
-
-</div>
-
-</div>
-
-<div id="outline-container-8-2-1-2" class="outline-5">
-<h5 id="sec-8-2-1-2"><span class="section-number-5">8.2.1.2</span> You want to know who's talking to whom, so we include the target attribute.</h5>
-<div class="outline-text-5" id="text-8-2-1-2">
-
-
-</div>
-
-</div>
-
-<div id="outline-container-8-2-1-3" class="outline-5">
-<h5 id="sec-8-2-1-3"><span class="section-number-5">8.2.1.3</span> Dispatch tables help us line a particular message up with a function.</h5>
-<div class="outline-text-5" id="text-8-2-1-3">
-
-
-</div>
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-8-3" class="outline-3">
-<h3 id="sec-8-3"><span class="section-number-3">8.3</span> I don't fully understand what the Same Origin Policy effects. In my case, I could load an image but the image's origin-clean flag was set to false and thus I couldn't actually obtain the image data.</h3>
-<div class="outline-text-3" id="text-8-3">
-
-
-<p>
-   <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#security-with-canvas-elements">http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#security-with-canvas-elements</a>
-</p>
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-9" class="outline-2">
-<h2 id="sec-9"><span class="section-number-2">9</span> Server-Side Concerns</h2>
-<div class="outline-text-2" id="text-9">
-
-
-
-</div>
-
-<div id="outline-container-9-1" class="outline-3">
-<h3 id="sec-9-1"><span class="section-number-3">9.1</span> Decoding Base64 data</h3>
-<div class="outline-text-3" id="text-9-1">
-
-
-
-</div>
-
-<div id="outline-container-9-1-1" class="outline-4">
-<h4 id="sec-9-1-1"><span class="section-number-4">9.1.1</span> Java's got that</h4>
-<div class="outline-text-4" id="text-9-1-1">
-
-
-</div>
-
-</div>
-
-<div id="outline-container-9-1-2" class="outline-4">
-<h4 id="sec-9-1-2"><span class="section-number-4">9.1.2</span> dataURIs are not base64 data</h4>
-<div class="outline-text-4" id="text-9-1-2">
-
-
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-9-2" class="outline-3">
-<h3 id="sec-9-2"><span class="section-number-3">9.2</span> Using Base64 data as an image</h3>
-<div class="outline-text-3" id="text-9-2">
-
-
-
-</div>
-
-<div id="outline-container-9-2-1" class="outline-4">
-<h4 id="sec-9-2-1"><span class="section-number-4">9.2.1</span> clojure multimethods with class as the dispatch function `(class (byte-array 1))`</h4>
-<div class="outline-text-4" id="text-9-2-1">
-
-
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-9-3" class="outline-3">
-<h3 id="sec-9-3"><span class="section-number-3">9.3</span> Setting a URLConnection's User-Agent string</h3>
-<div class="outline-text-3" id="text-9-3">
-
-
-
-</div>
-
-<div id="outline-container-9-3-1" class="outline-4">
-<h4 id="sec-9-3-1"><span class="section-number-4">9.3.1</span> Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</h4>
-<div class="outline-text-4" id="text-9-3-1">
-
-</div>
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-10" class="outline-2">
-<h2 id="sec-10"><span class="section-number-2">10</span> Further experiments</h2>
-<div class="outline-text-2" id="text-10">
-
-
-
-</div>
-
-<div id="outline-container-10-1" class="outline-3">
-<h3 id="sec-10-1"><span class="section-number-3">10.1</span> Chrome browser extensions are not subject to the Same Origin policy so far as I know. Try using them and encoding a canvas element and posting it to the iframe</h3>
-<div class="outline-text-3" id="text-10-1">
 
 
 
