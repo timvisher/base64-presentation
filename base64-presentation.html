@@ -109,7 +109,7 @@
 <li><a href="#sec-9-13-1">9.13.1 notes</a></li>
 </ul>
 </li>
-<li><a href="#sec-9-14">9.14 <code>postMessage</code> (sans Base64)</a>
+<li><a href="#sec-9-14">9.14 <code>POST</code> Import Data (sans Base64)</a>
 <ul>
 <li><a href="#sec-9-14-1">9.14.1 Nothing much to do here</a></li>
 </ul></li>
@@ -188,17 +188,14 @@
 <ul>
 <li><a href="#sec-11-4-1">11.4.1 Decoding Base64 data</a></li>
 <li><a href="#sec-11-4-2">11.4.2 Decoding Base64 data</a></li>
-<li><a href="#sec-11-4-3">11.4.3 Setting a URLConnection's User-Agent string</a>
-<ul>
-<li><a href="#sec-11-4-3-1">11.4.3.1 Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</a></li>
-</ul></li>
 </ul></li>
 </ul>
 </li>
-<li><a href="#sec-12">12 Further experiments</a></li>
-<li><a href="#sec-13">13 In Conclusion</a></li>
-<li><a href="#sec-14">14 Thanks! Questions?</a></li>
-<li><a href="#sec-15">15 </a></li>
+<li><a href="#sec-12">12 Setting a URLConnection's User-Agent string</a></li>
+<li><a href="#sec-13">13 Further experiments</a></li>
+<li><a href="#sec-14">14 In Conclusion</a></li>
+<li><a href="#sec-15">15 Thanks! Questions?</a></li>
+<li><a href="#sec-16">16 </a></li>
 </ul>
 </div>
 </div>
@@ -258,7 +255,7 @@
 
 <blockquote>
 
-<p>A community of currators passionate about their wallpaper.
+<p>A community of curators passionate about their wallpaper.
 </p>
 </blockquote>
 
@@ -300,7 +297,7 @@
 </li>
 <li><a href="http://www.thefoxisblack.com/category/the-desktop-wallpaper-project/">The Fox Is Black</a>
 </li>
-<li>A Failed Experiment Which Taught Me Something Anyway 
+<li>A Failed Experiment Which Taught Me Something Anyway
 </li>
 </ul>
 
@@ -335,7 +332,7 @@
 <li>403s on the back end while the front-end worked just fine.
 
 </li>
-<li>Nothing obvious but there were a number of suspcious cookies and they had just done a redesign. I suspected lock out.
+<li>Nothing obvious but there were a number of suspicious cookies and they had just done a redesign. I suspected lock out.
 
 </li>
 </ul>
@@ -522,7 +519,7 @@
 
 
 <pre class="src src-js"><span style="color: #00cd00;">var</span> <span style="color: #0000ee;">d</span>=document,
-    z=d.createElement(<span style="color: #00cdcd;">'scr'</span>+<span style="color: #00cdcd;">'ipt'</span>),
+    z=d.createElement(<span style="color: #00cdcd;">'src'</span>+<span style="color: #00cdcd;">'ipt'</span>),
     b=d.body;
 
 <span style="color: #00cd00;">if</span>(!b) {
@@ -635,7 +632,7 @@ wallpaperrrScraper.matchingScraper = <span style="color: #00cd00;">function</spa
 </li>
 <li>Remember to use <code>hasOwnProperty</code> if you're iterating over an object's properties.
 </li>
-<li>Passing a string to <code>match</code> works nicely and allows us to use regexs.
+<li>Passing a string to <code>match</code> works nicely and allows us to use regexps.
 </li>
 </ul>
 
@@ -675,7 +672,7 @@ wallpaperrrScraper.matchingScraper = <span style="color: #00cd00;">function</spa
 <li>Anyone can assoc into them, potentially opening up extensions without code redeployment.
 
 </li>
-<li>This particular structure is nice because I can use regexs
+<li>This particular structure is nice because I can use regexps
 </li>
 </ul>
 
@@ -938,7 +935,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </div>
 
 <div id="outline-container-9-14" class="outline-3">
-<h3 id="sec-9-14"><span class="section-number-3">9.14</span> <code>postMessage</code> (sans Base64) &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
+<h3 id="sec-9-14"><span class="section-number-3">9.14</span> <code>POST</code> Import Data (sans Base64) &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h3>
 <div class="outline-text-3" id="text-9-14">
 
 
@@ -1121,7 +1118,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </li>
 <li>Resolutions and Aspect Ratios should be added as tags automatically
 </li>
-<li>We should have hashes of all the files so storage is shared accross all users
+<li>We should have hashes of all the files so storage is shared across all users
 </li>
 <li>Multiple source uris for the same logical 'wallpaper' should be merged together. Others should be kept separate.
 </li>
@@ -1205,7 +1202,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 
 <ul>
-<li>Compojure is a thin wrapper (started at around 200 SLOC) around consructing Ring handler functions.
+<li>Compojure is a thin wrapper (started at around 200 SLOC) around constructing Ring handler functions.
 </li>
 <li>It provides a series of Macros which make it easy to declare what kind of request you're handling, the URL you expect to hit, and how you want to destructure the parameters that can come in.
 </li>
@@ -1291,7 +1288,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 </ul>
 
 </li>
-<li>This is a comman pattern for clojure code. Make a let that names each step of your algorithm so you can reference it later.
+<li>This is a common pattern for clojure code. Make a let that names each step of your algorithm so you can reference it later.
 </li>
 <li>Notice dorun/doall. This is because Clojure is lazily evaluated and when you get back to the front-end you won't be able to iterate over the lazyseq.
 </li>
@@ -1339,7 +1336,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 <ul>
 <li>The loop/recur form is the only tail-call optimized form in Clojure. Useful if you can't get your job done using standard list-comprehensions or fold operations
 </li>
-<li>Clojure supports destructuring binds. Sequences are desructured with vectors, and maps are destructured with maps.
+<li>Clojure supports destructuring binds. Sequences are destructured with vectors, and maps are destructured with maps.
 </li>
 <li>In the case of a zipfile, we want to drop the original uri and replace it with many temporary files.
 </li>
@@ -1686,7 +1683,7 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 <ul>
 <li>Use HTML Canvas to get a datURL.
 </li>
-<li>Send it to wallpaperrr via postMessage and JSON
+<li>Send it to Wallpaperrr via postMessage and JSON
 </li>
 <li>Implement an extension and java-image multimethod for (class (byte-array 1))
 </li>
@@ -1867,31 +1864,38 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 
 </div>
-
-</div>
-
-<div id="outline-container-11-4-3" class="outline-4">
-<h4 id="sec-11-4-3"><span class="section-number-4">11.4.3</span> Setting a URLConnection's User-Agent string &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h4>
-<div class="outline-text-4" id="text-11-4-3">
-
-
-
-</div>
-
-<div id="outline-container-11-4-3-1" class="outline-5">
-<h5 id="sec-11-4-3-1"><span class="section-number-5">11.4.3.1</span> Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.</h5>
-<div class="outline-text-5" id="text-11-4-3-1">
-
-</div>
-</div>
 </div>
 </div>
 
 </div>
 
 <div id="outline-container-12" class="outline-2">
-<h2 id="sec-12"><span class="section-number-2">12</span> Further experiments &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
+<h2 id="sec-12"><span class="section-number-2">12</span> Setting a URLConnection's User-Agent string &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
 <div class="outline-text-2" id="text-12">
+
+
+
+
+
+<pre class="src src-clojure"><span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">defn</span> <span style="color: #0000ee;">uri-input-stream-with-user-agent</span> [url]
+  <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">if-let</span> [url <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">try</span> <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">java.net.URL.</span> url<span style="color: #8a8a8a;">)</span>
+                    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">catch</span> <span style="color: #ff0000;">java.net.MalformedURLException</span> e
+                      <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">comment</span> <span style="color: #00cdcd;">"NB: OK to ignore. URL does not exist."</span><span style="color: #8a8a8a;">)))</span>]
+    <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">let</span> [con <span style="color: #8a8a8a;">(</span><span style="color: #00cd00;">doto</span> <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">.openConnection</span> url<span style="color: #8a8a8a;">)</span>
+                <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">.setRequestMethod</span> <span style="color: #00cdcd;">"GET"</span><span style="color: #8a8a8a;">)</span>
+                <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">.setRequestProperty</span> <span style="color: #00cdcd;">"User-Agent"</span> <span style="color: #00cdcd;">"Mozilla &#8230;"</span><span style="color: #8a8a8a;">)</span>
+                <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">.connect</span><span style="color: #8a8a8a;">))</span>]
+      <span style="color: #8a8a8a;">(</span><span style="color: #ff0000;">.getInputStream</span> con<span style="color: #8a8a8a;">))))</span>
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-13" class="outline-2">
+<h2 id="sec-13"><span class="section-number-2">13</span> Further experiments &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
+<div class="outline-text-2" id="text-13">
 
 <ul>
 <li>Browser Extensions
@@ -1903,9 +1907,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-13" class="outline-2">
-<h2 id="sec-13"><span class="section-number-2">13</span> In Conclusion &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
-<div class="outline-text-2" id="text-13">
+<div id="outline-container-14" class="outline-2">
+<h2 id="sec-14"><span class="section-number-2">14</span> In Conclusion &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
+<div class="outline-text-2" id="text-14">
 
 <ul>
 <li>Facepalm!
@@ -1923,9 +1927,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-14" class="outline-2">
-<h2 id="sec-14"><span class="section-number-2">14</span> Thanks! Questions? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
-<div class="outline-text-2" id="text-14">
+<div id="outline-container-15" class="outline-2">
+<h2 id="sec-15"><span class="section-number-2">15</span> Thanks! Questions? &nbsp;&nbsp;&nbsp;<span class="tag"><span class="slide">slide</span></span></h2>
+<div class="outline-text-2" id="text-15">
 
 
 <ul>
@@ -1946,9 +1950,9 @@ window.addEventListener(<span style="color: #00cdcd;">'message'</span>, handleMe
 
 </div>
 
-<div id="outline-container-15" class="outline-2">
-<h2 id="sec-15"><span class="section-number-2">15</span> </h2>
-<div class="outline-text-2" id="text-15">
+<div id="outline-container-16" class="outline-2">
+<h2 id="sec-16"><span class="section-number-2">16</span> </h2>
+<div class="outline-text-2" id="text-16">
 
 
 

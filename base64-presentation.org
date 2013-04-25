@@ -26,7 +26,7 @@
   #+END_QUOTE
 
   [[file:images/wallpaperrr.png]]
-  
+
 *** What is Wallpaperrr?                                              :notes:
       - A service intended to make it dead simple to import images to a library. Think Instapaper or Evernote.
       - A manager for your wallpaper collection across all devices with differing screen resolutions and storage capacities.
@@ -37,7 +37,7 @@
 
   - Import Strategy
   - [[http://www.thefoxisblack.com/category/the-desktop-wallpaper-project/][The Fox Is Black]]
-  - A Failed Experiment Which Taught Me Something Anyway 
+  - A Failed Experiment Which Taught Me Something Anyway
 
 ** slide notes                                                        :notes:
 
@@ -137,7 +137,7 @@
   b.appendChild(z);
 
 #+end_src
-   
+
 *** our bootstraperr
 
     - responsible for scraping the site
@@ -149,9 +149,9 @@
    #+begin_src js
      wallpaperrrScraper.scrapeSite = function () {
        var siteScraper;
-     
+
        siteScraper = wallpaperrrScraper.matchingScraper();
-     
+
        return siteScraper ? siteScraper() : wallpaperrrScraper.defaultScraper();
      };
    #+end_src
@@ -218,7 +218,7 @@
     wallpaperrrScraper.insertIFrame();
   };
 #+end_src
-   
+
 *** The anatomy of a scraper                                          :notes:
 
     - I need 3 things: title, source, and the uris.
@@ -777,14 +777,14 @@
                [source-uri & source-uris] (filter importable-uri? source-uris)]
           (if source-uri
             (cond …
-      
+
                   …
-      
+
                   (str->base64-byte-array source-uri)
                   (recur (conj expanded-source-uris
                                (str->base64-byte-array source-uri))
                          source-uris)
-      
+
                   …)
             expanded-source-uris)))
     #+end_src
@@ -798,9 +798,20 @@
                      (comment "NB: safe to ignore. Means base64 decoding failed."))))
     #+end_src
 
-*** Setting a URLConnection's User-Agent string                       :slide:
+* Setting a URLConnection's User-Agent string                         :slide:
 
-**** Ultimately, this is what fixed it. Turns out thefoxisblack wasn't requiring cookies to be set, just that your user-agent was correct.
+#+begin_src clojure
+  (defn uri-input-stream-with-user-agent [url]
+    (if-let [url (try (java.net.URL. url)
+                      (catch java.net.MalformedURLException e
+                        (comment "NB: OK to ignore. URL does not exist.")))]
+      (let [con (doto (.openConnection url)
+                  (.setRequestMethod "GET")
+                  (.setRequestProperty "User-Agent" "Mozilla …")
+                  (.connect))]
+        (.getInputStream con))))
+#+end_src
+
 * Further experiments                                                 :slide:
   - Browser Extensions
 
@@ -818,7 +829,7 @@
   - [[http://clojure.org/][Clojure.org]]
   - [[https://twitter.com/timvisher][@timvisher]]
 
-* 
+*
 
 #+TAGS: slide(s) notes(n)
 
